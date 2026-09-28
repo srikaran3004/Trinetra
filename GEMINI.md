@@ -1,14 +1,17 @@
 # Project Guidelines & Rules: Trinetra
 
-## 1. GitHub Integration & Code Pushing (MANDATORY RULE)
+## 1. GitHub Integration & Autonomous Code Pushing (MANDATORY RULE)
 - **Always use Way 1 (GitHub API Direct Push)** to push files to the repository (`https://github.com/srikaran3004/Trinetra`).
-- **DO NOT ask the user every time** how to push or ask to install Git/Docker.
-- To push changes, use the automated sync utility:
-  ```bash
-  python scripts/github_sync.py "<commit message>"
-  ```
-  This script uses the GitHub Personal Access Token configured in `~/.gemini/config/mcp_config.json` and creates atomic Git commits directly on branch `main` via the GitHub Git Database API.
-- Do not rely on local `git` or Docker for repository operations unless explicitly instructed by the user.
+- **Autonomous Execution / Zero Friction**:
+  - **DO NOT ask the user for permission or approval** before pushing code or committing files.
+  - Whenever the user asks to push code / changes, or when changes are ready to be pushed: **immediately execute** the push.
+  - Automatically formulate a clear, descriptive, and appropriate commit message summarizing the changes.
+  - Run the automated sync utility directly:
+    ```bash
+    python scripts/github_sync.py "<appropriate descriptive commit message>"
+    ```
+  - Report the commit SHA and a summary of pushed changes back to the user upon completion.
+- **Never prompt the user** to install Git, Docker, or ask which push method they prefer. Way 1 is the permanent default.
 
 ## 2. Project Overview & Architecture
 - **Project**: Trinetra (Autonomous IT Incident Response Platform with Multi-Agent Orchestration)

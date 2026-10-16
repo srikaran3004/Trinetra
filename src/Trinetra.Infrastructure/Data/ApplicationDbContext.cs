@@ -24,9 +24,13 @@ public class ApplicationDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Extensions
-        modelBuilder.HasPostgresExtension("uuid-ossp");
-        modelBuilder.HasPostgresExtension("vector");
+        var isNpgsql = Database.IsNpgsql();
+        if (isNpgsql)
+        {
+            // Extensions
+            modelBuilder.HasPostgresExtension("uuid-ossp");
+            modelBuilder.HasPostgresExtension("vector");
+        }
 
         // 1. User
         modelBuilder.Entity<User>(entity =>
@@ -173,8 +177,15 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Prerequisites).HasColumnName("prerequisites").HasColumnType("text[]");
             entity.Property(e => e.RisksAndWarnings).HasColumnName("risks_and_warnings").HasColumnType("text[]");
 
-            // Vector embedding - pgvector column type vector(1536)
-            entity.Property(e => e.ContentEmbedding).HasColumnName("content_embedding").HasColumnType("vector(1536)");
+            if (isNpgsql)
+            {
+                // Vector embedding - pgvector column type vector(1536)
+                entity.Property(e => e.ContentEmbedding).HasColumnName("content_embedding").HasColumnType("vector(1536)");
+            }
+            else
+            {
+                entity.Ignore(e => e.ContentEmbedding);
+            }
 
             entity.Property(e => e.Version).HasColumnName("version").HasDefaultValue(1);
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -269,7 +280,14 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Severity).HasColumnName("severity").HasMaxLength(20);
             entity.Property(e => e.AffectedServices).HasColumnName("affected_services").HasColumnType("text[]");
             entity.Property(e => e.Tags).HasColumnName("tags").HasColumnType("text[]");
-            entity.Property(e => e.HistoryEmbedding).HasColumnName("history_embedding").HasColumnType("vector(1536)");
+            if (isNpgsql)
+            {
+                entity.Property(e => e.HistoryEmbedding).HasColumnName("history_embedding").HasColumnType("vector(1536)");
+            }
+            else
+            {
+                entity.Ignore(e => e.HistoryEmbedding);
+            }
             entity.Property(e => e.OccurredAt).HasColumnName("occurred_at");
             entity.Property(e => e.ResolvedAt).HasColumnName("resolved_at");
             entity.HasIndex(e => e.ResolvedAt);

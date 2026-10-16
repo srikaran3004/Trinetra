@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -46,11 +47,43 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             mockRedis.Setup(r => r.IsConnected).Returns(true);
             services.AddSingleton(mockRedis.Object);
 
+            // Fix for .NET 10 runtime with TestHost ResponseBodyPipeWriter
+            services.AddTransient<IStartupFilter, ResponseBodyBufferingStartupFilter>();
+
             // Ensure database is created and seeded
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             db.Database.EnsureCreated();
         });
+    }
+}
+
+public class ResponseBodyBufferingStartupFilter : IStartupFilter
+{
+    public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+    {
+        return app =>
+        {
+            app.Use(async (context, nextMiddleware) =>
+            {
+                var originalBody = context.Response.Body;
+                await using var memStream = new MemoryStream();
+                context.Response.Body = memStream;
+
+                try
+                {
+                    await nextMiddleware();
+                }
+                finally
+                {
+                    context.Response.Body = originalBody;
+                    memStream.Position = 0;
+                    await memStream.CopyToAsync(originalBody);
+                }
+            });
+
+            next(app);
+        };
     }
 }

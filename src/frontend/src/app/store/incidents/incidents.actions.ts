@@ -19,3 +19,13 @@ export const incidentStatusChangedRealtime = createAction(
   '[Incidents] Incident Status Changed Realtime',
   props<{ incidentId: string; status: string }>()
 );
+
+export const agentActionCompletedRealtime = createAction(
+  '[Incidents] Agent Action Completed Realtime',
+  props<{ incidentId: string; agentName: string; action: any }>()
+);
+
+export const approvalRequiredRealtime = createAction(
+  '[Incidents] Approval Required Realtime',
+  props<{ incidentId: string; approval: any }>()
+);

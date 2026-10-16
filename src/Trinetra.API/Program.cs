@@ -143,6 +143,7 @@ builder.Services.AddScoped<IncidentCoordinatorAgent>(sp =>
 
 // 6. SignalR
 builder.Services.AddSignalR();
+builder.Services.AddScoped<IIncidentEventNotifier, SignalRIncidentEventNotifier>();
 
 // 7. JWT Authentication & RBAC Middleware
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "default_trinetra_super_secret_development_key_minimum_32_chars!";

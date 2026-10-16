@@ -37,5 +37,13 @@ export const incidentsReducer = createReducer(
   on(IncidentActions.incidentStatusChangedRealtime, (state, { incidentId, status }) => ({
     ...state,
     items: state.items.map(item => item.id === incidentId ? { ...item, status } : item)
+  })),
+  on(IncidentActions.agentActionCompletedRealtime, (state, { incidentId, agentName, action }) => ({
+    ...state,
+    items: state.items.map(item => item.id === incidentId ? { ...item, lastAction: action, lastAgent: agentName } : item)
+  })),
+  on(IncidentActions.approvalRequiredRealtime, (state, { incidentId, approval }) => ({
+    ...state,
+    items: state.items.map(item => item.id === incidentId ? { ...item, requiresApproval: true, pendingApproval: approval } : item)
   }))
 );

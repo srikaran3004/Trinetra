@@ -266,4 +266,90 @@ public class IncidentCoordinatorTests
 
         _recordedEvents.Should().Contain(e => e.EventType == "incident_escalated" && e.IncidentId == incidentId);
     }
+
+    [Fact]
+    public async Task CoordinateInvestigationAsync_WhenOneAgentFails_ShouldFallbackToPartialResultsAndComplete()
+    {
+        var incidentId = Guid.NewGuid();
+        var incident = new Incident
+        {
+            Id = incidentId,
+            Title = "Database Outage",
+            Severity = IncidentSeverities.Critical,
+            Status = IncidentStatuses.Triggered,
+            AffectedServices = new List<string> { "payment-api" },
+            TriggeredAt = DateTime.UtcNow
+        };
+
+        _mockStore.Setup(s => s.GetIncidentAsync(incidentId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(incident);
+
+        _mockStore.Setup(s => s.UpdateIncidentStatusAsync(incidentId, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Callback<Guid, string, string, CancellationToken>((id, status, reason, ct) => incident.Status = status)
+            .ReturnsAsync(true);
+
+        // log_analyzer and metrics_querier succeed; runbook_retriever fails
+        _mockInvoker
+            .Setup(i => i.InvokeAgentAsync(It.Is<AgentInvocationRequest>(r => r.AgentName == "log_analyzer"), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(AgentExecutionResult.Succeeded("log_analyzer", new { errors = 5 }, 120));
+
+        _mockInvoker
+            .Setup(i => i.InvokeAgentAsync(It.Is<AgentInvocationRequest>(r => r.AgentName == "metrics_querier"), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(AgentExecutionResult.Succeeded("metrics_querier", new { saturation = true }, 95));
+
+        _mockInvoker
+            .Setup(i => i.InvokeAgentAsync(It.Is<AgentInvocationRequest>(r => r.AgentName == "runbook_retriever"), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(AgentExecutionResult.Failed("runbook_retriever", "Vector database query timeout", 5000));
+
+        var report = await _coordinator.CoordinateInvestigationAsync(incidentId, timeoutSeconds: 30);
+
+        report.Should().NotBeNull();
+        report.Success.Should().BeTrue();
+        report.Status.Should().Be(IncidentStatuses.AnalysisComplete);
+
+        report.AgentResults["log_analyzer"].Success.Should().BeTrue();
+        report.AgentResults["metrics_querier"].Success.Should().BeTrue();
+        report.AgentResults["runbook_retriever"].Success.Should().BeFalse();
+
+        // Audit Trail should note partial results
+        _recordedEvents.Should().Contain(e => e.EventType == "investigation_completed" &&
+            e.ActionDescription!.Contains("partial results", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task CoordinateInvestigationAsync_WhenAllAgentsFail_ShouldEscalateIncident()
+    {
+        var incidentId = Guid.NewGuid();
+        var incident = new Incident
+        {
+            Id = incidentId,
+            Title = "Network Partition",
+            Severity = IncidentSeverities.Critical,
+            Status = IncidentStatuses.Triggered,
+            AffectedServices = new List<string> { "core-network" },
+            TriggeredAt = DateTime.UtcNow
+        };
+
+        _mockStore.Setup(s => s.GetIncidentAsync(incidentId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(incident);
+
+        _mockStore.Setup(s => s.UpdateIncidentStatusAsync(incidentId, IncidentStatuses.Investigating, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        _mockStore.Setup(s => s.EscalateIncidentAsync(incidentId, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Callback<Guid, string, CancellationToken>((id, reason, ct) => incident.Status = IncidentStatuses.Escalated)
+            .ReturnsAsync(true);
+
+        _mockInvoker
+            .Setup(i => i.InvokeAgentAsync(It.IsAny<AgentInvocationRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((AgentInvocationRequest req, CancellationToken ct) =>
+                AgentExecutionResult.Failed(req.AgentName, "Service unavailable", 100));
+
+        var report = await _coordinator.CoordinateInvestigationAsync(incidentId, timeoutSeconds: 30);
+
+        report.Should().NotBeNull();
+        report.Success.Should().BeFalse();
+        report.Status.Should().Be(IncidentStatuses.Escalated);
+        report.ErrorMessage.Should().Contain("All parallel investigation agents failed");
+    }
 }

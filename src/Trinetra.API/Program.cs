@@ -19,6 +19,7 @@ using Trinetra.Agents.Factory;
 using Trinetra.Agents.LogAnalyzer;
 using Trinetra.Agents.MetricsQuerier;
 using Trinetra.Agents.Orchestration;
+using Trinetra.Agents.RunbookRetriever;
 using Trinetra.API.Hubs;
 using Trinetra.API.Services;
 using Trinetra.Core.Interfaces;
@@ -175,6 +176,22 @@ builder.Services.AddScoped<MetricsQuerierAgent>(sp =>
     var auditWriter = sp.GetRequiredService<IAuditEventWriter>();
 
     return new MetricsQuerierAgent(config, kernel, logger, plugin, repo, auditWriter);
+});
+
+builder.Services.AddSingleton<IEmbeddingService, EmbeddingService>();
+builder.Services.AddScoped<IRunbookRepository, DbRunbookRepository>();
+builder.Services.AddScoped<RunbookRetrieverPlugin>();
+builder.Services.AddScoped<RunbookRetrieverAgent>(sp =>
+{
+    var aiOptions = sp.GetRequiredService<IOptions<AiSettings>>().Value;
+    var config = aiOptions.GetAgentConfig("RunbookRetriever");
+    var factory = sp.GetRequiredService<IKernelFactory>();
+    var kernel = factory.CreateKernel(config);
+    var logger = sp.GetRequiredService<ILogger<RunbookRetrieverAgent>>();
+    var plugin = sp.GetRequiredService<RunbookRetrieverPlugin>();
+    var auditWriter = sp.GetRequiredService<IAuditEventWriter>();
+
+    return new RunbookRetrieverAgent(config, kernel, logger, plugin, auditWriter);
 });
 
 // 6. SignalR
@@ -357,6 +374,16 @@ invoker?.RegisterAgentHandler("metrics_querier", async (req, ct) =>
         DateTime.TryParse(st?.ToString(), out var parsed) ? parsed : null;
     var report = await agent.QueryAndAnalyzeMetricsAsync(req.IncidentId, serviceName, timeRange, incidentStart, ct);
     return AgentExecutionResult.Succeeded("metrics_querier", report);
+});
+
+invoker?.RegisterAgentHandler("runbook_retriever", async (req, ct) =>
+{
+    using var scope = app.Services.CreateScope();
+    var agent = scope.ServiceProvider.GetRequiredService<RunbookRetrieverAgent>();
+    var summary = req.Parameters.TryGetValue("incidentSummary", out var sm) ? sm?.ToString() ?? "Incident reported" : "Incident reported";
+    var serviceName = req.Parameters.TryGetValue("serviceName", out var s) ? s?.ToString() : null;
+    var report = await agent.RetrieveRunbooksAsync(req.IncidentId, summary, null, serviceName, ct);
+    return AgentExecutionResult.Succeeded("runbook_retriever", report);
 });
 
 app.Run();

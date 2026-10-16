@@ -1,9 +1,11 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Trinetra.Agents.Configuration;
 using Trinetra.Core.Entities;
 using Trinetra.Core.Interfaces;
+using Trinetra.Core.Tracing;
 
 namespace Trinetra.Agents;
 
@@ -43,6 +45,19 @@ public abstract class AgentBase
     }
 
     /// <summary>
+    /// Starts an OpenTelemetry Activity span for this agent's operation.
+    /// </summary>
+    public virtual Activity? StartAgentActivity(string operationName, ActivityKind kind = ActivityKind.Internal)
+    {
+        var activity = TrinetraActivitySource.Source.StartActivity($"{AgentName} {operationName}", kind);
+        if (activity != null)
+        {
+            activity.SetTag("trinetra.agent.name", AgentName);
+        }
+        return activity;
+    }
+
+    /// <summary>
     /// Enforces the non-negotiable ground rule:
     /// "Every agent action writes a row to the incident_events audit table."
     /// </summary>
@@ -62,6 +77,21 @@ public abstract class AgentBase
         bool requiresApproval = false,
         CancellationToken cancellationToken = default)
     {
+        if (Activity.Current != null)
+        {
+            Activity.Current.AddEvent(new ActivityEvent(eventType, tags: new ActivityTagsCollection
+            {
+                { "action", actionDescription },
+                { "status", executionStatus }
+            }));
+
+            if (guardrailTriggered)
+            {
+                Activity.Current.SetTag("trinetra.guardrail.triggered", true);
+                Activity.Current.SetTag("trinetra.guardrail.name", guardrailName);
+            }
+        }
+
         if (AuditWriter == null)
         {
             Logger.LogWarning("No audit writer configured for agent '{AgentName}'. Event '{EventType}' logged only to logger.", AgentName, eventType);

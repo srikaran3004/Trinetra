@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -97,6 +98,25 @@ public abstract class RedisAgentWorkerBase : BackgroundService
 
     private async Task ProcessSingleTaskAsync(AgentTaskMessage task, CancellationToken ct)
     {
+        ActivityContext parentContext = default;
+        if (!string.IsNullOrEmpty(task.TraceParent) && ActivityContext.TryParse(task.TraceParent, null, out var parsed))
+        {
+            parentContext = parsed;
+        }
+
+        using var activity = Trinetra.Core.Tracing.TrinetraActivitySource.Source.StartActivity(
+            $"AgentWorker {task.AgentName}",
+            ActivityKind.Consumer,
+            parentContext);
+
+        if (activity != null)
+        {
+            activity.SetTag("trinetra.agent.name", task.AgentName);
+            activity.SetTag("trinetra.incident.id", task.IncidentId.ToString());
+            activity.SetTag("trinetra.task.id", task.TaskId);
+            activity.SetTag("trinetra.priority", task.Priority);
+        }
+
         _logger.LogInformation("Processing task {TaskId} for agent {AgentName} on incident {IncidentId}",
             task.TaskId, task.AgentName, task.IncidentId);
 
@@ -125,6 +145,12 @@ public abstract class RedisAgentWorkerBase : BackgroundService
         try
         {
             var result = await ProcessTaskAsync(task, ct).ConfigureAwait(false);
+
+            if (activity != null)
+            {
+                activity.SetStatus(result.Success ? ActivityStatusCode.Ok : ActivityStatusCode.Error, result.ErrorMessage);
+                if (!result.Success) activity.SetTag("error.message", result.ErrorMessage);
+            }
 
             var completedState = new AgentStateSnapshot
             {
@@ -162,6 +188,12 @@ public abstract class RedisAgentWorkerBase : BackgroundService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to execute task {TaskId} for agent {AgentName}", task.TaskId, task.AgentName);
+
+            if (activity != null)
+            {
+                activity.SetStatus(ActivityStatusCode.Error, ex.Message);
+                activity.SetTag("error.message", ex.Message);
+            }
 
             var failedState = new AgentStateSnapshot
             {

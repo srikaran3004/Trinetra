@@ -30,6 +30,11 @@ public class RedisStreamTaskQueue : IAgentTaskQueue, IRedisStreamConsumer
         ArgumentNullException.ThrowIfNull(task);
         var targetKey = string.IsNullOrWhiteSpace(streamKey) ? DefaultStreamKey : streamKey;
 
+        if (string.IsNullOrEmpty(task.TraceParent) && System.Diagnostics.Activity.Current != null)
+        {
+            task.TraceParent = System.Diagnostics.Activity.Current.Id;
+        }
+
         var entries = new NameValueEntry[]
         {
             new("taskId", task.TaskId ?? Guid.NewGuid().ToString()),
@@ -37,7 +42,8 @@ public class RedisStreamTaskQueue : IAgentTaskQueue, IRedisStreamConsumer
             new("agentName", task.AgentName ?? string.Empty),
             new("payload", task.PayloadJson ?? "{}"),
             new("createdAt", task.CreatedAt.ToString("O")),
-            new("priority", task.Priority.ToString())
+            new("priority", task.Priority.ToString()),
+            new("traceParent", task.TraceParent ?? string.Empty)
         };
 
         try
@@ -108,7 +114,8 @@ public class RedisStreamTaskQueue : IAgentTaskQueue, IRedisStreamConsumer
                         : DateTimeOffset.UtcNow,
                     Priority = dict.TryGetValue("priority", out var prioStr) && int.TryParse(prioStr, out var prio)
                         ? prio
-                        : 0
+                        : 0,
+                    TraceParent = dict.TryGetValue("traceParent", out var tp) && !string.IsNullOrEmpty(tp) ? tp : null
                 };
 
                 messages.Add(msg);

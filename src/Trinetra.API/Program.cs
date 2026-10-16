@@ -61,7 +61,8 @@ builder.Services.AddOpenTelemetry()
     {
         tracing
             .AddAspNetCoreInstrumentation()
-            .AddHttpClientInstrumentation();
+            .AddHttpClientInstrumentation()
+            .AddSource(Trinetra.Core.Tracing.TrinetraActivitySource.SourceName);
 
         if (!string.IsNullOrWhiteSpace(otelEndpoint) && Uri.TryCreate(otelEndpoint, UriKind.Absolute, out var otelUri))
         {

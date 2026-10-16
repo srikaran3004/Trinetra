@@ -14,6 +14,7 @@ public class AgentTaskMessage
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public int Priority { get; set; } = 0;
     public string? MessageId { get; set; }
+    public string? TraceParent { get; set; }
 }
 
 public interface IAgentTaskQueue

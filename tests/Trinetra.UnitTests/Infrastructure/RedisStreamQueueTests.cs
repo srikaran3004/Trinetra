@@ -9,6 +9,7 @@ using Moq;
 using StackExchange.Redis;
 using Trinetra.Agents.Orchestration;
 using Trinetra.Agents.Workers;
+using Trinetra.Core.Entities;
 using Trinetra.Core.Interfaces;
 using Trinetra.Infrastructure.Services;
 using Xunit;
@@ -158,7 +159,7 @@ public class RedisStreamQueueTests
             It.IsAny<CommandFlags>()), Times.Once);
     }
 
-    private class TestLogWorker : RedisAgentWorkerBase
+    public class TestLogWorker : RedisAgentWorkerBase
     {
         public override string TargetAgentName => "log_analyzer";
 
@@ -178,7 +179,7 @@ public class RedisStreamQueueTests
                 Success = true,
                 AgentName = task.AgentName,
                 OutputSummary = "Found 3 errors in logs",
-                Data = new { ErrorCount = 3 }
+                OutputData = new { ErrorCount = 3 }
             });
         }
     }
@@ -189,7 +190,7 @@ public class RedisStreamQueueTests
         var mockConsumer = new Mock<IRedisStreamConsumer>();
         var mockStateStore = new Mock<IIncidentStateStore>();
         var mockAuditWriter = new Mock<IAuditEventWriter>();
-        var mockLogger = new Mock<ILogger<TestLogWorker>>();
+        var mockLogger = new Mock<ILogger>();
 
         var incidentId = Guid.NewGuid();
         var task = new AgentTaskMessage
@@ -244,20 +245,12 @@ public class RedisStreamQueueTests
             It.IsAny<CancellationToken>()), Times.Once);
 
         // Ground rule: audit events recorded for start and completion
-        mockAuditWriter.Verify(a => a.RecordEventAsync(
-            incidentId,
-            "log_analyzer",
-            "agent_task_started",
-            It.IsAny<string>(),
-            It.IsAny<object>(),
+        mockAuditWriter.Verify(a => a.WriteEventAsync(
+            It.Is<IncidentEvent>(e => e.IncidentId == incidentId && e.AgentName == "log_analyzer" && e.EventType == "agent_task_started"),
             It.IsAny<CancellationToken>()), Times.Once);
 
-        mockAuditWriter.Verify(a => a.RecordEventAsync(
-            incidentId,
-            "log_analyzer",
-            "agent_task_completed",
-            It.IsAny<string>(),
-            It.IsAny<object>(),
+        mockAuditWriter.Verify(a => a.WriteEventAsync(
+            It.Is<IncidentEvent>(e => e.IncidentId == incidentId && e.AgentName == "log_analyzer" && e.EventType == "agent_task_completed"),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 }

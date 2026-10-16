@@ -1,9 +1,11 @@
 using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Trinetra.Agents.Orchestration;
+using Trinetra.Core.Entities;
 using Trinetra.Core.Interfaces;
 
 namespace Trinetra.Agents.Workers;
@@ -109,36 +111,47 @@ public abstract class RedisAgentWorkerBase : BackgroundService
         if (task.IncidentId != Guid.Empty)
         {
             await _stateStore.SetAgentStatusAsync(task.IncidentId, agentState, ct: ct).ConfigureAwait(false);
-            await _auditWriter.RecordEventAsync(
-                task.IncidentId,
-                task.AgentName,
-                "agent_task_started",
-                $"Started processing task {task.TaskId}",
-                agentState,
-                ct).ConfigureAwait(false);
+            await _auditWriter.WriteEventAsync(new IncidentEvent
+            {
+                IncidentId = task.IncidentId,
+                AgentName = task.AgentName,
+                EventType = "agent_task_started",
+                ActionDescription = $"Started processing task {task.TaskId}",
+                ToolParams = JsonSerializer.Serialize(agentState),
+                ExecutionStatus = "in_progress"
+            }, ct).ConfigureAwait(false);
         }
 
         try
         {
             var result = await ProcessTaskAsync(task, ct).ConfigureAwait(false);
 
-            agentState.Status = result.Success ? "completed" : "failed";
-            agentState.CompletedAt = DateTimeOffset.UtcNow;
-            agentState.ErrorMessage = result.ErrorMessage;
-            agentState.OutputSummary = result.OutputSummary;
+            var completedState = new AgentStateSnapshot
+            {
+                AgentName = task.AgentName,
+                Status = result.Success ? "completed" : "failed",
+                StartedAt = agentState.StartedAt,
+                CompletedAt = DateTimeOffset.UtcNow,
+                ErrorMessage = result.ErrorMessage,
+                OutputSummary = result.OutputSummary
+            };
 
             if (task.IncidentId != Guid.Empty)
             {
-                await _stateStore.SetAgentStatusAsync(task.IncidentId, agentState, ct: ct).ConfigureAwait(false);
-                await _auditWriter.RecordEventAsync(
-                    task.IncidentId,
-                    task.AgentName,
-                    result.Success ? "agent_task_completed" : "agent_task_failed",
-                    result.Success
+                await _stateStore.SetAgentStatusAsync(task.IncidentId, completedState, ct: ct).ConfigureAwait(false);
+                await _auditWriter.WriteEventAsync(new IncidentEvent
+                {
+                    IncidentId = task.IncidentId,
+                    AgentName = task.AgentName,
+                    EventType = result.Success ? "agent_task_completed" : "agent_task_failed",
+                    ActionDescription = result.Success
                         ? $"Completed task {task.TaskId}: {result.OutputSummary}"
                         : $"Task {task.TaskId} failed: {result.ErrorMessage}",
-                    result,
-                    ct).ConfigureAwait(false);
+                    ToolResult = result.OutputJson ?? (result.OutputData != null ? JsonSerializer.Serialize(result.OutputData) : null),
+                    ExecutionStatus = result.Success ? "success" : "failed",
+                    ExecutionError = result.ErrorMessage,
+                    ExecutionTimeMs = (int)result.ExecutionTimeMs
+                }, ct).ConfigureAwait(false);
             }
 
             if (!string.IsNullOrEmpty(task.MessageId))
@@ -150,20 +163,27 @@ public abstract class RedisAgentWorkerBase : BackgroundService
         {
             _logger.LogError(ex, "Failed to execute task {TaskId} for agent {AgentName}", task.TaskId, task.AgentName);
 
-            agentState.Status = "failed";
-            agentState.CompletedAt = DateTimeOffset.UtcNow;
-            agentState.ErrorMessage = ex.Message;
+            var failedState = new AgentStateSnapshot
+            {
+                AgentName = task.AgentName,
+                Status = "failed",
+                StartedAt = agentState.StartedAt,
+                CompletedAt = DateTimeOffset.UtcNow,
+                ErrorMessage = ex.Message
+            };
 
             if (task.IncidentId != Guid.Empty)
             {
-                await _stateStore.SetAgentStatusAsync(task.IncidentId, agentState, ct: ct).ConfigureAwait(false);
-                await _auditWriter.RecordEventAsync(
-                    task.IncidentId,
-                    task.AgentName,
-                    "agent_task_failed",
-                    $"Task {task.TaskId} threw an unhandled exception: {ex.Message}",
-                    new { Exception = ex.ToString() },
-                    ct).ConfigureAwait(false);
+                await _stateStore.SetAgentStatusAsync(task.IncidentId, failedState, ct: ct).ConfigureAwait(false);
+                await _auditWriter.WriteEventAsync(new IncidentEvent
+                {
+                    IncidentId = task.IncidentId,
+                    AgentName = task.AgentName,
+                    EventType = "agent_task_failed",
+                    ActionDescription = $"Task {task.TaskId} threw an unhandled exception: {ex.Message}",
+                    ExecutionStatus = "failed",
+                    ExecutionError = ex.ToString()
+                }, ct).ConfigureAwait(false);
             }
 
             if (!string.IsNullOrEmpty(task.MessageId))

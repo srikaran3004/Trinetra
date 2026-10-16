@@ -15,6 +15,7 @@ public class AgentExecutionResult
     public bool Success { get; set; }
     public string? OutputJson { get; set; }
     public object? OutputData { get; set; }
+    public string? OutputSummary { get; set; }
     public string? ErrorMessage { get; set; }
     public long ExecutionTimeMs { get; set; }
 

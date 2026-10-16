@@ -132,11 +132,11 @@
 - [x] Commit: `phase2: incident coordinator agent state machine`
 
 #### 2.3 — Redis State Management
-- [ ] `IIncidentStateStore` backed by Redis hashes (incident state, agent status)  
-- [ ] Redis Streams for agent task queuing (replaces RabbitMQ)  
-- [ ] `IRedisStreamConsumer` base for agent workers  
-- [ ] Unit tests: state store CRUD, stream publish/consume  
-- [ ] Commit: `phase2: redis state management and streams`
+- [x] `IIncidentStateStore` backed by Redis hashes (incident state, agent status)  
+- [x] Redis Streams for agent task queuing (replaces RabbitMQ)  
+- [x] `IRedisStreamConsumer` base for agent workers  
+- [x] Unit tests: state store CRUD, stream publish/consume  
+- [x] Commit: `phase2: redis state management and streams`
 
 #### 2.4 — SignalR Real-Time Hub
 - [ ] `IncidentHub` — clients subscribe to incident groups  

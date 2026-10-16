@@ -117,11 +117,11 @@
 ### Tasks
 
 #### 2.1 — Semantic Kernel Setup
-- [ ] `Trinetra.Agents` project: SK NuGet packages  
-- [ ] `AgentBase` abstract class: SK kernel factory, tool registration, audit-event emission  
-- [ ] `AgentConfiguration` loaded from `appsettings.json` (model, temperature, maxTokens per agent)  
-- [ ] Unit tests: kernel creation, config loading  
-- [ ] Commit: `phase2: semantic kernel base agent infrastructure`
+- [x] `Trinetra.Agents` project: SK NuGet packages  
+- [x] `AgentBase` abstract class: SK kernel factory, tool registration, audit-event emission  
+- [x] `AgentConfiguration` loaded from `appsettings.json` (model, temperature, maxTokens per agent)  
+- [x] Unit tests: kernel creation, config loading  
+- [x] Commit: `phase2: semantic kernel base agent infrastructure`
 
 #### 2.2 — Incident Coordinator Agent
 - [ ] `IncidentCoordinatorAgent`: implements full workflow state machine  

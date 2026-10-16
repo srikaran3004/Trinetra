@@ -13,6 +13,7 @@
     <ProjectReference Include="..\..\src\Trinetra.Core\Trinetra.Core.csproj" />
     <ProjectReference Include="..\..\src\Trinetra.Infrastructure\Trinetra.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Trinetra.API\Trinetra.API.csproj" />
+    <ProjectReference Include="..\..\src\Trinetra.Agents\Trinetra.Agents.csproj" />
   </ItemGroup>
 
   <ItemGroup>

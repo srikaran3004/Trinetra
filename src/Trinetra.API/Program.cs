@@ -12,10 +12,14 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.Elasticsearch;
 using StackExchange.Redis;
+using Trinetra.Agents.Configuration;
+using Trinetra.Agents.Factory;
 using Trinetra.API.Hubs;
 using Trinetra.API.Services;
+using Trinetra.Core.Interfaces;
 using Trinetra.Infrastructure.Auth;
 using Trinetra.Infrastructure.Data;
+using Trinetra.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -109,6 +113,9 @@ builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IIncidentService, IncidentService>();
+builder.Services.AddScoped<IAuditEventWriter, DbAuditEventWriter>();
+builder.Services.Configure<AiSettings>(builder.Configuration.GetSection(AiSettings.SectionName));
+builder.Services.AddSingleton<IKernelFactory, SemanticKernelFactory>();
 
 // 6. SignalR
 builder.Services.AddSignalR();

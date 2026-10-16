@@ -12,8 +12,11 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.Elasticsearch;
 using StackExchange.Redis;
+using Microsoft.Extensions.Options;
 using Trinetra.Agents.Configuration;
+using Trinetra.Agents.Coordinator;
 using Trinetra.Agents.Factory;
+using Trinetra.Agents.Orchestration;
 using Trinetra.API.Hubs;
 using Trinetra.API.Services;
 using Trinetra.Core.Interfaces;
@@ -116,6 +119,23 @@ builder.Services.AddScoped<IIncidentService, IncidentService>();
 builder.Services.AddScoped<IAuditEventWriter, DbAuditEventWriter>();
 builder.Services.Configure<AiSettings>(builder.Configuration.GetSection(AiSettings.SectionName));
 builder.Services.AddSingleton<IKernelFactory, SemanticKernelFactory>();
+builder.Services.AddSingleton<IAgentInvoker, DefaultAgentInvoker>();
+builder.Services.AddScoped<IIncidentCoordinatorStore, DbIncidentCoordinatorStore>();
+builder.Services.AddScoped<CoordinatorPlugin>();
+builder.Services.AddScoped<IncidentCoordinatorAgent>(sp =>
+{
+    var aiOptions = sp.GetRequiredService<IOptions<AiSettings>>().Value;
+    var config = aiOptions.GetAgentConfig("IncidentCoordinator");
+    var factory = sp.GetRequiredService<IKernelFactory>();
+    var kernel = factory.CreateKernel(config);
+    var logger = sp.GetRequiredService<ILogger<IncidentCoordinatorAgent>>();
+    var store = sp.GetRequiredService<IIncidentCoordinatorStore>();
+    var invoker = sp.GetRequiredService<IAgentInvoker>();
+    var plugin = sp.GetRequiredService<CoordinatorPlugin>();
+    var auditWriter = sp.GetRequiredService<IAuditEventWriter>();
+
+    return new IncidentCoordinatorAgent(config, kernel, logger, store, invoker, plugin, auditWriter);
+});
 
 // 6. SignalR
 builder.Services.AddSignalR();

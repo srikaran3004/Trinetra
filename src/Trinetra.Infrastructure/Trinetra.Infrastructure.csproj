@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Trinetra.Core\Trinetra.Core.csproj" />
+    <ProjectReference Include="..\Trinetra.Agents\Trinetra.Agents.csproj" />
   </ItemGroup>
 
   <ItemGroup>

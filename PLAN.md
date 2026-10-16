@@ -124,12 +124,12 @@
 - [x] Commit: `phase2: semantic kernel base agent infrastructure`
 
 #### 2.2 — Incident Coordinator Agent
-- [ ] `IncidentCoordinatorAgent`: implements full workflow state machine  
-- [ ] Tools: `create_incident`, `update_incident_status`, `invoke_agent`, `wait_for_agents`, `escalate_incident`  
-- [ ] Async parallel agent fan-out + fan-in  
-- [ ] Every state transition writes `IncidentEvent` row  
-- [ ] Integration tests: coordinator drives stub child agents  
-- [ ] Commit: `phase2: incident coordinator agent state machine`
+- [x] `IncidentCoordinatorAgent`: implements full workflow state machine  
+- [x] Tools: `create_incident`, `update_incident_status`, `invoke_agent`, `wait_for_agents`, `escalate_incident`  
+- [x] Async parallel agent fan-out + fan-in  
+- [x] Every state transition writes `IncidentEvent` row  
+- [x] Integration tests: coordinator drives stub child agents  
+- [x] Commit: `phase2: incident coordinator agent state machine`
 
 #### 2.3 — Redis State Management
 - [ ] `IIncidentStateStore` backed by Redis hashes (incident state, agent status)  

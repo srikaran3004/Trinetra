@@ -16,6 +16,7 @@ using Microsoft.Extensions.Options;
 using Trinetra.Agents.Configuration;
 using Trinetra.Agents.Coordinator;
 using Trinetra.Agents.Factory;
+using Trinetra.Agents.LogAnalyzer;
 using Trinetra.Agents.Orchestration;
 using Trinetra.API.Hubs;
 using Trinetra.API.Services;
@@ -140,6 +141,22 @@ builder.Services.AddScoped<IncidentCoordinatorAgent>(sp =>
     var auditWriter = sp.GetRequiredService<IAuditEventWriter>();
 
     return new IncidentCoordinatorAgent(config, kernel, logger, store, invoker, plugin, auditWriter);
+});
+builder.Services.AddSingleton<ILogQueryService, ElasticsearchLogQueryService>();
+builder.Services.AddScoped<ILogsSnapshotRepository, DbLogsSnapshotRepository>();
+builder.Services.AddScoped<LogAnalyzerPlugin>();
+builder.Services.AddScoped<LogAnalyzerAgent>(sp =>
+{
+    var aiOptions = sp.GetRequiredService<IOptions<AiSettings>>().Value;
+    var config = aiOptions.GetAgentConfig("LogAnalyzer");
+    var factory = sp.GetRequiredService<IKernelFactory>();
+    var kernel = factory.CreateKernel(config);
+    var logger = sp.GetRequiredService<ILogger<LogAnalyzerAgent>>();
+    var plugin = sp.GetRequiredService<LogAnalyzerPlugin>();
+    var repo = sp.GetRequiredService<ILogsSnapshotRepository>();
+    var auditWriter = sp.GetRequiredService<IAuditEventWriter>();
+
+    return new LogAnalyzerAgent(config, kernel, logger, plugin, repo, auditWriter);
 });
 
 // 6. SignalR
@@ -298,6 +315,18 @@ app.MapHealthChecks("/health/live", new HealthCheckOptions
 app.MapHealthChecks("/health/ready", new HealthCheckOptions
 {
     Predicate = check => check.Tags.Contains("ready")
+});
+
+// Wire agent invoker handlers
+var invoker = app.Services.GetRequiredService<IAgentInvoker>() as DefaultAgentInvoker;
+invoker?.RegisterAgentHandler("log_analyzer", async (req, ct) =>
+{
+    using var scope = app.Services.CreateScope();
+    var agent = scope.ServiceProvider.GetRequiredService<LogAnalyzerAgent>();
+    var serviceName = req.Parameters.TryGetValue("serviceName", out var s) ? s?.ToString() ?? "api" : "api";
+    var timeRange = req.Parameters.TryGetValue("timeRange", out var tr) ? tr?.ToString() ?? "15m" : "15m";
+    var report = await agent.AnalyzeLogsAsync(req.IncidentId, serviceName, timeRange, ct);
+    return AgentExecutionResult.Succeeded("log_analyzer", report);
 });
 
 app.Run();

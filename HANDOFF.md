@@ -35,13 +35,13 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 
 ## 1. CURRENT STATE
 
-- **Phase:** Phase 2 — Agent Infrastructure (Completed)
-- **Current Task:** Phase 2 complete; ready to begin Phase 3 — Core Investigation Agents (Task 3.1)
-- **Task Status:** done (Phase 2); todo (Task 3.1)
-- **Last Commit SHA:** `02daa8dd54476faca731bd75315893b415363b43`
+- **Phase:** Phase 3 — Core Agents (In Progress)
+- **Current Task:** Task 3.2 — Metrics Querier Agent
+- **Task Status:** todo (Task 3.2); done (Task 3.1)
+- **Last Commit SHA:** pending commit
 - **Last Device:** `office`
-- **Last Updated:** 2026-10-16 19:04:31+05:30
-- **NEXT ACTION:** Begin Phase 3 Task 3.1 by implementing the Log Analyzer Agent with Elasticsearch client integration, stack trace extraction, and log anomaly detection.
+- **Last Updated:** 2026-10-16 22:18:00+05:30
+- **NEXT ACTION:** Implement Task 3.2 Metrics Querier Agent with Prometheus HTTP client integration, metric querying, baseline calculations, saturation detection, and audit trail events.
 
 ---
 
@@ -120,9 +120,9 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
   *Tested on:* office
 
 ### Phase 3 — Core Agents (Week 3)
-- [ ] **Task 3.1 — Log Analyzer Agent**  
+- [x] **Task 3.1 — Log Analyzer Agent**  
   *Done when:* Elasticsearch client integrated, tools `query_logs`, `extract_stack_traces`, `detect_anomalies` implemented, snapshot stored in `LogsSnapshot`, and audit events logged.  
-  *Tested on:* pending: needs office / home
+  *Tested on:* office
 - [ ] **Task 3.2 — Metrics Querier Agent**  
   *Done when:* Prometheus HTTP client integrated, tools `query_metrics`, `get_baseline_metrics`, `detect_saturation` implemented, snapshot stored in `MetricsSnapshot`, and audit events logged.  
   *Tested on:* pending: needs office / home
@@ -231,6 +231,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - **2026-10-16 18:00 [office]:** Implemented Task 2.3 (Redis Hashes state store `RedisIncidentStateStore`, Redis Streams task queue `RedisStreamTaskQueue`, `RedisAgentWorkerBase`); unit tests passing; committed `36d1388`.
 - **2026-10-16 19:30 [office]:** Implemented Task 2.4 (SignalR `IncidentHub` group management, `SignalRIncidentEventNotifier`, Angular `IncidentHubService` with NgRx actions/reducers) and Task 2.5 (OpenTelemetry `TrinetraActivitySource`, W3C traceparent context propagation over Redis Streams, OpenTelemetry integration tests); all 76 tests (58 unit + 18 integration) passing.
 - **2026-10-16 20:30 [office]:** Consolidated tracking files (`PROGRESS.md` and `PLAN.md`) into single source of truth `HANDOFF.md` per owner instructions; Phase 2 completed.
+- **2026-10-16 22:18 [office]:** Completed Task 3.1 (Log Analyzer Agent); integrated Elasticsearch client via `ElasticsearchLogQueryService`, created `LogAnalyzerPlugin` with SK kernel tools (`query_logs`, `extract_stack_traces`, `detect_anomalies`, `correlate_with_deployment`), implemented `LogAnalyzerAgent` with audit trail recording in `incident_events` and persistence to `LogsSnapshot` via `DbLogsSnapshotRepository`, implemented `LogAnalyzerWorker` background stream consumer; added 8 unit tests in `LogAnalyzerTests.cs`; all 84 tests (66 unit + 18 integration) passing cleanly.
 
 ---
 

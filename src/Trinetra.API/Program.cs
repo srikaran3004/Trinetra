@@ -110,6 +110,10 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
         });
     }
 });
+builder.Services.AddSingleton<IIncidentStateStore, RedisIncidentStateStore>();
+builder.Services.AddSingleton<RedisStreamTaskQueue>();
+builder.Services.AddSingleton<IAgentTaskQueue>(sp => sp.GetRequiredService<RedisStreamTaskQueue>());
+builder.Services.AddSingleton<IRedisStreamConsumer>(sp => sp.GetRequiredService<RedisStreamTaskQueue>());
 
 // 5. Auth & Core Application Services
 builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();

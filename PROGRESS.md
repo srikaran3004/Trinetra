@@ -44,6 +44,7 @@
 | D-11 | SI-11: Embedding constraint | Remove NOT NULL check from `content_embedding`; generate embedding async after insert | Allows runbook creation without blocking on embedding generation |
 | D-12 | SI-12: Users API key | Remove the CHECK constraint; API key assigned post-creation via separate endpoint | Allows user creation workflow |
 | D-13 | SI-13: Real-time | **ASP.NET Core SignalR** (not Socket.io) | Native .NET; Angular has first-class `@microsoft/signalr` client |
+| D-14 | User Workflow Instruction | **Do not check git status upon session continuation** | Rely purely on PROGRESS.md and PLAN.md to determine implementation state, as commits/pushes may not occur every time |
 
 ---
 

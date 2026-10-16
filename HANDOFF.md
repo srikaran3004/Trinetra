@@ -36,12 +36,12 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 ## 1. CURRENT STATE
 
 - **Phase:** Phase 3 — Core Agents (In Progress)
-- **Current Task:** Task 3.2 — Metrics Querier Agent
-- **Task Status:** todo (Task 3.2); done (Task 3.1)
+- **Current Task:** Task 3.3 — Runbook Retriever Agent (RAG)
+- **Task Status:** todo (Task 3.3); done (Task 3.2)
 - **Last Commit SHA:** pending commit
 - **Last Device:** `office`
-- **Last Updated:** 2026-10-16 22:18:00+05:30
-- **NEXT ACTION:** Implement Task 3.2 Metrics Querier Agent with Prometheus HTTP client integration, metric querying, baseline calculations, saturation detection, and audit trail events.
+- **Last Updated:** 2026-10-16 22:30:00+05:30
+- **NEXT ACTION:** Implement Task 3.3 Runbook Retriever Agent with pgvector cosine distance search (`<=>`), embedding generation, and runbook remediation step extraction.
 
 ---
 
@@ -123,9 +123,9 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - [x] **Task 3.1 — Log Analyzer Agent**  
   *Done when:* Elasticsearch client integrated, tools `query_logs`, `extract_stack_traces`, `detect_anomalies` implemented, snapshot stored in `LogsSnapshot`, and audit events logged.  
   *Tested on:* office
-- [ ] **Task 3.2 — Metrics Querier Agent**  
+- [x] **Task 3.2 — Metrics Querier Agent**  
   *Done when:* Prometheus HTTP client integrated, tools `query_metrics`, `get_baseline_metrics`, `detect_saturation` implemented, snapshot stored in `MetricsSnapshot`, and audit events logged.  
-  *Tested on:* pending: needs office / home
+  *Tested on:* office
 - [ ] **Task 3.3 — Runbook Retriever Agent (RAG)**  
   *Done when:* Embedding generation wired, tools `search_runbooks_by_embedding`, `search_runbooks_by_keyword`, `extract_remediation_steps` use pgvector cosine distance (`<=>`), and rankings validated.  
   *Tested on:* pending: needs office / home
@@ -232,6 +232,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - **2026-10-16 19:30 [office]:** Implemented Task 2.4 (SignalR `IncidentHub` group management, `SignalRIncidentEventNotifier`, Angular `IncidentHubService` with NgRx actions/reducers) and Task 2.5 (OpenTelemetry `TrinetraActivitySource`, W3C traceparent context propagation over Redis Streams, OpenTelemetry integration tests); all 76 tests (58 unit + 18 integration) passing.
 - **2026-10-16 20:30 [office]:** Consolidated tracking files (`PROGRESS.md` and `PLAN.md`) into single source of truth `HANDOFF.md` per owner instructions; Phase 2 completed.
 - **2026-10-16 22:18 [office]:** Completed Task 3.1 (Log Analyzer Agent); integrated Elasticsearch client via `ElasticsearchLogQueryService`, created `LogAnalyzerPlugin` with SK kernel tools (`query_logs`, `extract_stack_traces`, `detect_anomalies`, `correlate_with_deployment`), implemented `LogAnalyzerAgent` with audit trail recording in `incident_events` and persistence to `LogsSnapshot` via `DbLogsSnapshotRepository`, implemented `LogAnalyzerWorker` background stream consumer; added 8 unit tests in `LogAnalyzerTests.cs`; all 84 tests (66 unit + 18 integration) passing cleanly.
+- **2026-10-16 22:30 [office]:** Completed Task 3.2 (Metrics Querier Agent); integrated Prometheus HTTP client via `PrometheusMetricsService`, implemented `MetricsQuerierPlugin` with SK kernel tools (`query_metrics`, `get_baseline_metrics`, `detect_saturation`, `correlate_with_incident_time`), implemented `MetricsQuerierAgent` with mandatory audit events in `incident_events` and persistence to `MetricsSnapshot` via `DbMetricsSnapshotRepository`, implemented `MetricsQuerierWorker` background stream consumer; added 5 unit tests in `MetricsQuerierTests.cs`; all 89 tests (71 unit + 18 integration) passing cleanly.
 
 ---
 

@@ -17,6 +17,7 @@ using Trinetra.Agents.Configuration;
 using Trinetra.Agents.Coordinator;
 using Trinetra.Agents.Factory;
 using Trinetra.Agents.LogAnalyzer;
+using Trinetra.Agents.MetricsQuerier;
 using Trinetra.Agents.Orchestration;
 using Trinetra.API.Hubs;
 using Trinetra.API.Services;
@@ -157,6 +158,23 @@ builder.Services.AddScoped<LogAnalyzerAgent>(sp =>
     var auditWriter = sp.GetRequiredService<IAuditEventWriter>();
 
     return new LogAnalyzerAgent(config, kernel, logger, plugin, repo, auditWriter);
+});
+
+builder.Services.AddHttpClient<IPrometheusMetricsService, PrometheusMetricsService>();
+builder.Services.AddScoped<IMetricsSnapshotRepository, DbMetricsSnapshotRepository>();
+builder.Services.AddScoped<MetricsQuerierPlugin>();
+builder.Services.AddScoped<MetricsQuerierAgent>(sp =>
+{
+    var aiOptions = sp.GetRequiredService<IOptions<AiSettings>>().Value;
+    var config = aiOptions.GetAgentConfig("MetricsQuerier");
+    var factory = sp.GetRequiredService<IKernelFactory>();
+    var kernel = factory.CreateKernel(config);
+    var logger = sp.GetRequiredService<ILogger<MetricsQuerierAgent>>();
+    var plugin = sp.GetRequiredService<MetricsQuerierPlugin>();
+    var repo = sp.GetRequiredService<IMetricsSnapshotRepository>();
+    var auditWriter = sp.GetRequiredService<IAuditEventWriter>();
+
+    return new MetricsQuerierAgent(config, kernel, logger, plugin, repo, auditWriter);
 });
 
 // 6. SignalR
@@ -327,6 +345,18 @@ invoker?.RegisterAgentHandler("log_analyzer", async (req, ct) =>
     var timeRange = req.Parameters.TryGetValue("timeRange", out var tr) ? tr?.ToString() ?? "15m" : "15m";
     var report = await agent.AnalyzeLogsAsync(req.IncidentId, serviceName, timeRange, ct);
     return AgentExecutionResult.Succeeded("log_analyzer", report);
+});
+
+invoker?.RegisterAgentHandler("metrics_querier", async (req, ct) =>
+{
+    using var scope = app.Services.CreateScope();
+    var agent = scope.ServiceProvider.GetRequiredService<MetricsQuerierAgent>();
+    var serviceName = req.Parameters.TryGetValue("serviceName", out var s) ? s?.ToString() ?? "api" : "api";
+    var timeRange = req.Parameters.TryGetValue("timeRange", out var tr) ? tr?.ToString() ?? "15m" : "15m";
+    DateTime? incidentStart = req.Parameters.TryGetValue("incidentStartTime", out var st) &&
+        DateTime.TryParse(st?.ToString(), out var parsed) ? parsed : null;
+    var report = await agent.QueryAndAnalyzeMetricsAsync(req.IncidentId, serviceName, timeRange, incidentStart, ct);
+    return AgentExecutionResult.Succeeded("metrics_querier", report);
 });
 
 app.Run();

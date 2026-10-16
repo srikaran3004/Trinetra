@@ -1,0 +1,105 @@
+name: Trinetra CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-build-test:
+    name: Backend Build, Test & Coverage
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_DB: trinetra_prod
+          POSTGRES_USER: trinetra_user
+          POSTGRES_PASSWORD: test_password_123
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore Trinetra.sln
+
+      - name: Build solution
+        run: dotnet build Trinetra.sln --no-restore --configuration Release
+
+      - name: Run Unit Tests with Coverage
+        run: >
+          dotnet test tests/Trinetra.UnitTests/Trinetra.UnitTests.csproj
+          --no-build
+          --configuration Release
+          --collect:"XPlat Code Coverage"
+          --results-directory ./TestResults/UnitTests
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+
+      - name: Run Integration Tests with Coverage
+        env:
+          ConnectionStrings__TrinetraDb: "Host=localhost;Port=5432;Database=trinetra_prod;Username=trinetra_user;Password=test_password_123"
+          ConnectionStrings__Redis: "localhost:6379"
+        run: >
+          dotnet test tests/Trinetra.IntegrationTests/Trinetra.IntegrationTests.csproj
+          --no-build
+          --configuration Release
+          --collect:"XPlat Code Coverage"
+          --results-directory ./TestResults/IntegrationTests
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: ./TestResults
+
+  frontend-build-test:
+    name: Frontend Build & Test
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: src/frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+          cache-dependency-path: src/frontend/package.json
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Build Angular Application
+        run: npm run build -- --configuration production

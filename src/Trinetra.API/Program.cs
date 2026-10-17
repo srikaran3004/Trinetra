@@ -23,6 +23,9 @@ using Trinetra.Agents.RunbookRetriever;
 using Trinetra.Agents.RootCauseAnalyzer;
 using Trinetra.Agents.Guardrails;
 using Trinetra.Agents.RemediationProposer;
+using Trinetra.Agents.AutoExecutor;
+using Trinetra.Agents.Execution;
+using Trinetra.Core.Models.Execution;
 using Trinetra.API.Hubs;
 using Trinetra.API.Services;
 using Trinetra.Core.Interfaces;
@@ -232,6 +235,25 @@ builder.Services.AddScoped<RemediationProposerAgent>(sp =>
 
 // 5b. Guardrails Engine (singleton — stateless compiled regex rules)
 builder.Services.AddSingleton<IGuardrailsEngine, GuardrailsEngine>();
+
+// 5c. Auto-Executor Agent & Process Sandbox
+builder.Services.AddSingleton<ICommandSandbox, ProcessCommandSandbox>();
+builder.Services.AddScoped<AutoExecutorPlugin>();
+builder.Services.AddScoped<AutoExecutorAgent>(sp =>
+{
+    var aiOptions = sp.GetRequiredService<IOptions<AiSettings>>().Value;
+    var config = aiOptions.GetAgentConfig("AutoExecutor");
+    var factory = sp.GetRequiredService<IKernelFactory>();
+    var kernel = factory.CreateKernel(config);
+    var logger = sp.GetRequiredService<ILogger<AutoExecutorAgent>>();
+    var plugin = sp.GetRequiredService<AutoExecutorPlugin>();
+    var guardrails = sp.GetRequiredService<IGuardrailsEngine>();
+    var sandbox = sp.GetRequiredService<ICommandSandbox>();
+    var store = sp.GetRequiredService<IIncidentCoordinatorStore>();
+    var auditWriter = sp.GetRequiredService<IAuditEventWriter>();
+
+    return new AutoExecutorAgent(config, kernel, logger, plugin, guardrails, sandbox, store, auditWriter);
+});
 
 // 6. SignalR & Workflow
 builder.Services.AddSignalR();
@@ -449,6 +471,37 @@ invoker?.RegisterAgentHandler("remediation_proposer", async (req, ct) =>
     var runbooksJson = req.Parameters.TryGetValue("runbooksJson", out var rj) ? rj?.ToString() : null;
     var report = await agent.ProposeRemediationAsync(req.IncidentId, rootCause, rootCauseCategory, severity, serviceName, runbooksJson, ct);
     return AgentExecutionResult.Succeeded("remediation_proposer", report);
+});
+
+invoker?.RegisterAgentHandler("auto_executor", async (req, ct) =>
+{
+    using var scope = app.Services.CreateScope();
+    var agent = scope.ServiceProvider.GetRequiredService<AutoExecutorAgent>();
+    
+    var command = req.Parameters.TryGetValue("command", out var c) ? c?.ToString() : null;
+    var actionTitle = req.Parameters.TryGetValue("actionTitle", out var at) ? at?.ToString() ?? "Automated Remediation" : "Automated Remediation";
+    var rollbackCommand = req.Parameters.TryGetValue("rollbackCommand", out var rc) ? rc?.ToString() : null;
+    var riskLevel = req.Parameters.TryGetValue("riskLevel", out var rl) ? rl?.ToString() ?? "low" : "low";
+    var isApproved = req.Parameters.TryGetValue("isApproved", out var ia) && (ia is bool b ? b : bool.TryParse(ia?.ToString(), out var parsed) && parsed);
+    var timeout = req.Parameters.TryGetValue("timeoutSeconds", out var ts) && int.TryParse(ts?.ToString(), out var parsedTimeout) ? parsedTimeout : 300;
+
+    var execReq = new CommandExecutionRequest
+    {
+        IncidentId = req.IncidentId,
+        ActionTitle = actionTitle,
+        Command = command,
+        RollbackCommand = rollbackCommand,
+        RiskLevel = riskLevel,
+        IsApproved = isApproved,
+        TimeoutSeconds = timeout
+    };
+
+    var report = await agent.ExecuteRemediationAsync(execReq, ct);
+    var res = report.Status == ExecutionStatus.Success
+        ? AgentExecutionResult.Succeeded("auto_executor", report)
+        : AgentExecutionResult.Failed("auto_executor", report.ErrorMessage ?? "Execution failed");
+    res.OutputData = report;
+    return res;
 });
 
 app.Run();

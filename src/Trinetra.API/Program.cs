@@ -229,9 +229,10 @@ builder.Services.AddScoped<RemediationProposerAgent>(sp =>
     return new RemediationProposerAgent(config, kernel, logger, plugin, store, auditWriter);
 });
 
-// 6. SignalR
+// 6. SignalR & Workflow
 builder.Services.AddSignalR();
 builder.Services.AddScoped<IIncidentEventNotifier, SignalRIncidentEventNotifier>();
+builder.Services.AddScoped<IApprovalWorkflowService, ApprovalWorkflowService>();
 
 // 7. JWT Authentication & RBAC Middleware
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "default_trinetra_super_secret_development_key_minimum_32_chars!";

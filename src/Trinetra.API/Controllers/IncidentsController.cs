@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Trinetra.API.DTOs;
 using Trinetra.API.Services;
+using Trinetra.Core.Enums;
+using Trinetra.Core.Interfaces;
 
 namespace Trinetra.API.Controllers;
 
@@ -11,10 +13,14 @@ namespace Trinetra.API.Controllers;
 public class IncidentsController : ControllerBase
 {
     private readonly IIncidentService _incidentService;
+    private readonly IApprovalWorkflowService _workflowService;
 
-    public IncidentsController(IIncidentService incidentService)
+    public IncidentsController(
+        IIncidentService incidentService,
+        IApprovalWorkflowService workflowService)
     {
         _incidentService = incidentService;
+        _workflowService = workflowService;
     }
 
     /// <summary>
@@ -140,5 +146,101 @@ public class IncidentsController : ControllerBase
     {
         var result = await _incidentService.GetIncidentEventsAsync(id, event_type, limit, offset, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Approves remediation for an incident, unlocking execution.
+    /// </summary>
+    [HttpPost("{id:guid}/approve")]
+    [Authorize(Roles = "admin,lead,manager,sre")]
+    [ProducesResponseType(typeof(ApproveResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ApproveIncident(
+        Guid id,
+        [FromBody] ApproveRequest? request,
+        CancellationToken cancellationToken)
+    {
+        Guid? approverId = request?.ApprovedByUserId;
+        if (!approverId.HasValue)
+        {
+            var sub = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+            if (Guid.TryParse(sub, out var parsed)) approverId = parsed;
+        }
+
+        var success = await _workflowService.ApproveByIncidentIdAsync(
+            id,
+            approverId,
+            request?.Notes,
+            request?.ScheduledFor,
+            cancellationToken);
+
+        if (!success)
+        {
+            return NotFound(new ErrorResponse
+            {
+                Error = new ErrorDetail
+                {
+                    Code = "NOT_FOUND",
+                    Message = $"Incident with ID '{id}' was not found",
+                    Status = StatusCodes.Status404NotFound
+                }
+            });
+        }
+
+        return Ok(new ApproveResponse
+        {
+            ApprovalId = id,
+            Status = "approved",
+            ApprovedAt = DateTime.UtcNow,
+            RemediationWillExecuteAt = request?.ScheduledFor ?? DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
+    /// Rejects or denies remediation for an incident, escalating the incident.
+    /// </summary>
+    [HttpPost("{id:guid}/reject")]
+    [HttpPost("{id:guid}/deny")]
+    [Authorize(Roles = "admin,lead,manager,sre")]
+    [ProducesResponseType(typeof(DenyResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RejectIncident(
+        Guid id,
+        [FromBody] DenyRequest? request,
+        CancellationToken cancellationToken)
+    {
+        Guid? denierId = request?.DeniedByUserId;
+        if (!denierId.HasValue)
+        {
+            var sub = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+            if (Guid.TryParse(sub, out var parsed)) denierId = parsed;
+        }
+
+        var success = await _workflowService.DenyByIncidentIdAsync(
+            id,
+            denierId,
+            request?.Reason ?? "Remediation rejected by operator",
+            cancellationToken);
+
+        if (!success)
+        {
+            return NotFound(new ErrorResponse
+            {
+                Error = new ErrorDetail
+                {
+                    Code = "NOT_FOUND",
+                    Message = $"Incident with ID '{id}' was not found",
+                    Status = StatusCodes.Status404NotFound
+                }
+            });
+        }
+
+        return Ok(new DenyResponse
+        {
+            ApprovalId = id,
+            Status = "denied",
+            DeniedAt = DateTime.UtcNow,
+            IncidentStatus = IncidentStatuses.Escalated
+        });
     }
 }

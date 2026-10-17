@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Trinetra.API.DTOs;
 using Trinetra.Core.Entities;
 using Trinetra.Core.Enums;
+using Trinetra.Core.Interfaces;
 using Trinetra.Infrastructure.Data;
 
 namespace Trinetra.API.Controllers;
@@ -14,10 +15,14 @@ namespace Trinetra.API.Controllers;
 public class ApprovalsController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly IApprovalWorkflowService _workflowService;
 
-    public ApprovalsController(ApplicationDbContext dbContext)
+    public ApprovalsController(
+        ApplicationDbContext dbContext,
+        IApprovalWorkflowService workflowService)
     {
         _dbContext = dbContext;
+        _workflowService = workflowService;
     }
 
     /// <summary>
@@ -76,11 +81,21 @@ public class ApprovalsController : ControllerBase
         [FromBody] ApproveRequest request,
         CancellationToken cancellationToken)
     {
-        var evt = await _dbContext.IncidentEvents
-            .Include(e => e.Incident)
-            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+        Guid? approverId = request.ApprovedByUserId;
+        if (!approverId.HasValue)
+        {
+            var sub = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+            if (Guid.TryParse(sub, out var parsed)) approverId = parsed;
+        }
 
-        if (evt == null)
+        var success = await _workflowService.ApproveAsync(
+            id,
+            approverId,
+            request.Notes,
+            request.ScheduledFor,
+            cancellationToken);
+
+        if (!success)
         {
             return NotFound(new ErrorResponse
             {
@@ -93,36 +108,9 @@ public class ApprovalsController : ControllerBase
             });
         }
 
-        Guid? approverId = request.ApprovedByUserId;
-        if (!approverId.HasValue)
-        {
-            var sub = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
-            if (Guid.TryParse(sub, out var parsed)) approverId = parsed;
-        }
-
-        evt.ApprovedBy = approverId;
-        evt.ApprovalTimestamp = DateTime.UtcNow;
-        evt.ApprovalNotes = request.Notes;
-        evt.ExecutionStatus = ExecutionStatuses.Success;
-
-        // Ground rule: Audit event for approval write
-        var auditEvent = new IncidentEvent
-        {
-            IncidentId = evt.IncidentId,
-            EventType = "remediation_approved",
-            AgentName = "ApprovalGate",
-            ActionDescription = $"Action '{evt.ActionDescription}' approved by user {approverId}. Notes: {request.Notes}",
-            ExecutionStatus = ExecutionStatuses.Success,
-            CreatedByUserId = approverId,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _dbContext.IncidentEvents.Add(auditEvent);
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
         return Ok(new ApproveResponse
         {
-            ApprovalId = evt.Id,
+            ApprovalId = id,
             Status = "approved",
             ApprovedAt = DateTime.UtcNow,
             RemediationWillExecuteAt = request.ScheduledFor ?? DateTime.UtcNow
@@ -141,11 +129,20 @@ public class ApprovalsController : ControllerBase
         [FromBody] DenyRequest request,
         CancellationToken cancellationToken)
     {
-        var evt = await _dbContext.IncidentEvents
-            .Include(e => e.Incident)
-            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+        Guid? denierId = request.DeniedByUserId;
+        if (!denierId.HasValue)
+        {
+            var sub = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+            if (Guid.TryParse(sub, out var parsed)) denierId = parsed;
+        }
 
-        if (evt == null)
+        var success = await _workflowService.DenyAsync(
+            id,
+            denierId,
+            request.Reason ?? "Denied by operator",
+            cancellationToken);
+
+        if (!success)
         {
             return NotFound(new ErrorResponse
             {
@@ -158,43 +155,9 @@ public class ApprovalsController : ControllerBase
             });
         }
 
-        Guid? denierId = request.DeniedByUserId;
-        if (!denierId.HasValue)
-        {
-            var sub = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
-            if (Guid.TryParse(sub, out var parsed)) denierId = parsed;
-        }
-
-        evt.ApprovalTimestamp = DateTime.UtcNow;
-        evt.ApprovalNotes = $"Denied: {request.Reason}";
-        evt.ExecutionStatus = ExecutionStatuses.Failed;
-
-        // Escalate incident
-        if (evt.Incident != null)
-        {
-            evt.Incident.Status = IncidentStatuses.Escalated;
-            evt.Incident.EscalatedAt = DateTime.UtcNow;
-            evt.Incident.UpdatedAt = DateTime.UtcNow;
-        }
-
-        // Ground rule: Audit event for denial write
-        var auditEvent = new IncidentEvent
-        {
-            IncidentId = evt.IncidentId,
-            EventType = "remediation_denied",
-            AgentName = "ApprovalGate",
-            ActionDescription = $"Action '{evt.ActionDescription}' denied by user {denierId}. Reason: {request.Reason}. Incident escalated.",
-            ExecutionStatus = ExecutionStatuses.Failed,
-            CreatedByUserId = denierId,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _dbContext.IncidentEvents.Add(auditEvent);
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
         return Ok(new DenyResponse
         {
-            ApprovalId = evt.Id,
+            ApprovalId = id,
             Status = "denied",
             DeniedAt = DateTime.UtcNow,
             IncidentStatus = IncidentStatuses.Escalated

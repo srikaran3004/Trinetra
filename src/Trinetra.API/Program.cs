@@ -20,6 +20,7 @@ using Trinetra.Agents.LogAnalyzer;
 using Trinetra.Agents.MetricsQuerier;
 using Trinetra.Agents.Orchestration;
 using Trinetra.Agents.RunbookRetriever;
+using Trinetra.Agents.RootCauseAnalyzer;
 using Trinetra.API.Hubs;
 using Trinetra.API.Services;
 using Trinetra.Core.Interfaces;
@@ -192,6 +193,23 @@ builder.Services.AddScoped<RunbookRetrieverAgent>(sp =>
     var auditWriter = sp.GetRequiredService<IAuditEventWriter>();
 
     return new RunbookRetrieverAgent(config, kernel, logger, plugin, auditWriter);
+});
+
+builder.Services.AddScoped<RootCauseAnalyzerPlugin>();
+builder.Services.AddScoped<RootCauseAnalyzerAgent>(sp =>
+{
+    var aiOptions = sp.GetRequiredService<IOptions<AiSettings>>().Value;
+    var config = aiOptions.GetAgentConfig("RootCauseAnalyzer");
+    var factory = sp.GetRequiredService<IKernelFactory>();
+    var kernel = factory.CreateKernel(config);
+    var logger = sp.GetRequiredService<ILogger<RootCauseAnalyzerAgent>>();
+    var plugin = sp.GetRequiredService<RootCauseAnalyzerPlugin>();
+    var store = sp.GetRequiredService<IIncidentCoordinatorStore>();
+    var logsRepo = sp.GetService<ILogsSnapshotRepository>();
+    var metricsRepo = sp.GetService<IMetricsSnapshotRepository>();
+    var auditWriter = sp.GetRequiredService<IAuditEventWriter>();
+
+    return new RootCauseAnalyzerAgent(config, kernel, logger, plugin, store, logsRepo, metricsRepo, auditWriter);
 });
 
 // 6. SignalR
@@ -384,6 +402,18 @@ invoker?.RegisterAgentHandler("runbook_retriever", async (req, ct) =>
     var serviceName = req.Parameters.TryGetValue("serviceName", out var s) ? s?.ToString() : null;
     var report = await agent.RetrieveRunbooksAsync(req.IncidentId, summary, null, serviceName, ct);
     return AgentExecutionResult.Succeeded("runbook_retriever", report);
+});
+
+invoker?.RegisterAgentHandler("root_cause_analyzer", async (req, ct) =>
+{
+    using var scope = app.Services.CreateScope();
+    var agent = scope.ServiceProvider.GetRequiredService<RootCauseAnalyzerAgent>();
+    var summary = req.Parameters.TryGetValue("incidentSummary", out var sm) ? sm?.ToString() : null;
+    var logsJson = req.Parameters.TryGetValue("logsJson", out var lj) ? lj?.ToString() : null;
+    var metricsJson = req.Parameters.TryGetValue("metricsJson", out var mj) ? mj?.ToString() : null;
+    var runbooksJson = req.Parameters.TryGetValue("runbooksJson", out var rj) ? rj?.ToString() : null;
+    var report = await agent.AnalyzeRootCauseAsync(req.IncidentId, summary, logsJson, metricsJson, runbooksJson, ct);
+    return AgentExecutionResult.Succeeded("root_cause_analyzer", report);
 });
 
 app.Run();

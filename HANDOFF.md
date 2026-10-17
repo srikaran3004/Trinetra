@@ -28,7 +28,8 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 2. Append a SESSION LOG entry.
 3. Commit code and HANDOFF.md together. A WIP commit is fine for an unfinished task, marked
    "doing". Message format: "phase2: task 3 wip [office]".
-4. Push. If the push fails, alert the user immediately.
+4. Do NOT push to GitHub (per Owner Mandate D-26). Commits are made locally only.
+   At phase completion, intimate the owner so they can push.
 ```
 
 ---
@@ -67,7 +68,8 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - **Small Commits:** Make small, reviewable commits (one logical task per commit).
 - **Never Commit Secrets:** Real keys stay in `.env` (gitignored). `.env.example` holds placeholders only.
 - **Configurable LLM Model:** Keep the Claude model name (`Ai:ModelId`) and API key in configuration (`appsettings.json` / environment variables), never hardcoded.
-- **Checkpoint Rule:** Update HANDOFF.md, commit, and push after every task or immediately upon pause/stop.
+- **Checkpoint Rule:** Update HANDOFF.md and commit locally after every task or immediately upon pause/stop.
+- **Git Push Protocol:** The agent is NOT responsible for pushing code to GitHub. The owner pushes code when they choose. The agent performs tasks and commits locally. Once a phase is complete, the agent stops, posts the phase report, and intimates the owner so they can push. Once the owner pushes, the agent verifies and awaits "continue" to proceed to the next phase.
 
 ---
 
@@ -234,6 +236,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 | D-23 | 2026-10-17 | Auth token in memory only, never localStorage | Security requirement; brief §10 is explicit | home |
 | D-24 | 2026-10-17 | CommandPalette: included | Adds discoverability for power users with no meaningful cost; logged as optional in brief | home |
 | D-25 | 2026-10-17 | Prerender step for `/`: skip for F6; decide in F6 if it fits in under one day | Brief §4.6 makes prerender optional; log the decision in F6 SESSION LOG | home |
+| D-26 | 2026-10-17 | Owner pushes code to GitHub; agent commits locally only | Explicit owner instruction: agent does not push; agent intimates owner at phase completion | home |
 
 ---
 

@@ -8,7 +8,6 @@ export const Table = React.forwardRef<
   <div className="relative w-full overflow-auto">
     <table
       ref={ref}
-      role="table"
       className={cn(
         'w-full caption-bottom text-[var(--text-sm)] text-[var(--color-text-primary)] border-collapse select-text',
         className,
@@ -25,7 +24,6 @@ export const TableHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <thead
     ref={ref}
-    role="rowgroup"
     className={cn(
       'border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-hover)]/30',
       className,
@@ -41,7 +39,6 @@ export const TableBody = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tbody
     ref={ref}
-    role="rowgroup"
     className={cn('divide-y divide-[var(--color-border-subtle)]', className)}
     {...props}
   />
@@ -54,7 +51,6 @@ export const TableFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tfoot
     ref={ref}
-    role="rowgroup"
     className={cn(
       'border-t border-[var(--color-border-subtle)] bg-[var(--color-surface-hover)]/40 font-medium',
       className,
@@ -72,7 +68,6 @@ export const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
   ({ className, selected, ...props }, ref) => (
     <tr
       ref={ref}
-      role="row"
       aria-selected={selected}
       data-selected={selected ? 'true' : undefined}
       className={cn(
@@ -93,7 +88,6 @@ export const TableHead = React.forwardRef<
 >(({ className, numeric, ...props }, ref) => (
   <th
     ref={ref}
-    role="columnheader"
     scope="col"
     data-numeric={numeric ? 'true' : undefined}
     className={cn(
@@ -112,7 +106,6 @@ export const TableCell = React.forwardRef<
 >(({ className, numeric, ...props }, ref) => (
   <td
     ref={ref}
-    role="cell"
     data-numeric={numeric ? 'true' : undefined}
     className={cn(
       'p-4 align-middle text-[var(--text-sm)] text-[var(--color-text-primary)]',

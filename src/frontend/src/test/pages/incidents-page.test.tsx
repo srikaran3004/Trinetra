@@ -202,11 +202,12 @@ describe('Active Incidents List Page (Task F3-1)', () => {
     // Dispatch realtime SignalR event inside act
     act(() => {
       mockSignalREmitter.emit('IncidentCreated', {
-        incident_id: 'INC-2024-9999',
+        id: 'INC-2024-9999',
+        incidentId: 'INC-2024-9999',
         title: 'Kafka broker partition leader lost',
         severity: 'critical',
-        service: 'kafka-cluster',
-        timestamp: new Date().toISOString(),
+        status: 'triggered',
+        triggeredAt: new Date().toISOString(),
       })
     })
 
@@ -217,9 +218,7 @@ describe('Active Incidents List Page (Task F3-1)', () => {
     })
 
     // Highlight class applied per Brief §8 (1.2s background tint)
-    const newRow = screen
-      .getAllByRole('row')
-      .find((r) => r.textContent?.includes('INC-2024-9999'))
+    const newRow = screen.getAllByRole('row').find((r) => r.textContent.includes('INC-2024-9999'))
     expect(newRow).toHaveClass('highlight-incident')
 
     // Accessibility live region announced arrival

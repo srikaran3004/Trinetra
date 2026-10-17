@@ -1,15 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
-import {
-  Search,
-  FilterX,
-  Radio,
-  PlusCircle,
-  Clock,
-  CheckCircle2,
-  AlertTriangle,
-  Zap,
-} from 'lucide-react'
+import { Search, FilterX, Zap } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -30,7 +21,6 @@ import {
 import { useIncidents } from '@/hooks/use-incidents'
 import { mockSignalREmitter } from '@/realtime/mock-signalr-emitter'
 import { cn } from '@/lib/cn'
-import type { IncidentSummary } from '@/api/types'
 
 const STATUS_OPTIONS = [
   { label: 'All Statuses', value: 'all' },
@@ -66,20 +56,13 @@ export function IncidentsPage() {
   const [selectedIndex, setSelectedIndex] = useState<number>(0)
   const rowRefs = useRef<(HTMLElement | null)[]>([])
 
-  const {
-    incidents,
-    rawIncidents,
-    isLoading,
-    isError,
-    error,
-    refetch,
-    highlightedIncidentId,
-  } = useIncidents({
-    status: statusParam,
-    severity: severityParam,
-    service: serviceParam,
-    search: searchParam,
-  })
+  const { incidents, rawIncidents, isLoading, isError, error, refetch, highlightedIncidentId } =
+    useIncidents({
+      status: statusParam,
+      severity: severityParam,
+      service: serviceParam,
+      search: searchParam,
+    })
 
   // Extract distinct service names for filter dropdown
   const availableServices = useMemo(() => {
@@ -112,10 +95,7 @@ export function IncidentsPage() {
   }, [setSearchParams])
 
   const hasActiveFilters =
-    statusParam !== 'all' ||
-    severityParam !== 'all' ||
-    serviceParam !== 'all' ||
-    searchParam !== ''
+    statusParam !== 'all' || severityParam !== 'all' || serviceParam !== 'all' || searchParam !== ''
 
   // Sync debounced search input to URL query
   useEffect(() => {
@@ -124,7 +104,9 @@ export function IncidentsPage() {
         updateFilter('search', searchInput)
       }
     }, 250)
-    return () => clearTimeout(timeout)
+    return () => {
+      clearTimeout(timeout)
+    }
   }, [searchInput, searchParam, updateFilter])
 
   // Reset selected index if incidents array shrinks
@@ -151,26 +133,28 @@ export function IncidentsPage() {
         e.preventDefault()
         setSelectedIndex((prev) => {
           const next = Math.min(prev + 1, incidents.length - 1)
-          rowRefs.current[next]?.scrollIntoView?.({ block: 'nearest' })
+          rowRefs.current[next]?.scrollIntoView({ block: 'nearest' })
           return next
         })
       } else if (e.key === 'k' || e.key === 'ArrowUp') {
         e.preventDefault()
         setSelectedIndex((prev) => {
           const next = Math.max(prev - 1, 0)
-          rowRefs.current[next]?.scrollIntoView?.({ block: 'nearest' })
+          rowRefs.current[next]?.scrollIntoView({ block: 'nearest' })
           return next
         })
       } else if (e.key === 'Enter') {
         if (incidents[selectedIndex]) {
           e.preventDefault()
-          navigate(`/incidents/${incidents[selectedIndex].id}`)
+          void navigate(`/incidents/${incidents[selectedIndex].id}`)
         }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
   }, [incidents, selectedIndex, navigate])
 
   // Count incidents by severity for quick header metrics
@@ -190,12 +174,14 @@ export function IncidentsPage() {
   // Simulation trigger to demonstrate realtime arrival
   const triggerSimulatedIncident = () => {
     const idNum = Math.floor(1000 + Math.random() * 9000)
+    const incId = `INC-2024-${idNum}`
     mockSignalREmitter.emit('IncidentCreated', {
-      incident_id: `INC-2024-${idNum}`,
+      id: incId,
+      incidentId: incId,
       title: `Simulated memory pressure spike on worker-pool-${idNum % 4}`,
       severity: 'critical',
-      service: `worker-service-0${(idNum % 3) + 1}`,
-      timestamp: new Date().toISOString(),
+      status: 'triggered',
+      triggeredAt: new Date().toISOString(),
     })
   }
 
@@ -236,7 +222,7 @@ export function IncidentsPage() {
               size="sm"
               onClick={triggerSimulatedIncident}
               className="gap-1.5 text-xs ml-2"
-              title="Dispatches a mock SignalR IncidentCreated event with 1.2s highlight animation"
+              aria-label="Simulate incident"
             >
               <Zap size={13} className="text-[var(--color-accent-text)]" />
               <span>Simulate Incident</span>
@@ -258,7 +244,9 @@ export function IncidentsPage() {
               <input
                 type="text"
                 value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
+                onChange={(e) => {
+                  setSearchInput(e.target.value)
+                }}
                 placeholder="Search incidents or ID..."
                 aria-label="Search incidents"
                 className="w-full h-9 pl-9 pr-3 rounded-[var(--radius-sm)] bg-[var(--color-surface-hover)] border border-[var(--color-border-subtle)] text-[var(--text-xs)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-focus-ring)] transition-colors"
@@ -268,7 +256,9 @@ export function IncidentsPage() {
             {/* Severity Filter */}
             <select
               value={severityParam}
-              onChange={(e) => updateFilter('severity', e.target.value)}
+              onChange={(e) => {
+                updateFilter('severity', e.target.value)
+              }}
               aria-label="Filter by severity"
               className="h-9 px-3 rounded-[var(--radius-sm)] bg-[var(--color-surface-hover)] border border-[var(--color-border-subtle)] text-[var(--text-xs)] text-[var(--color-text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-focus-ring)] cursor-pointer"
             >
@@ -282,7 +272,9 @@ export function IncidentsPage() {
             {/* Status Filter */}
             <select
               value={statusParam}
-              onChange={(e) => updateFilter('status', e.target.value)}
+              onChange={(e) => {
+                updateFilter('status', e.target.value)
+              }}
               aria-label="Filter by status"
               className="h-9 px-3 rounded-[var(--radius-sm)] bg-[var(--color-surface-hover)] border border-[var(--color-border-subtle)] text-[var(--text-xs)] text-[var(--color-text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-focus-ring)] cursor-pointer"
             >
@@ -296,7 +288,9 @@ export function IncidentsPage() {
             {/* Service Filter */}
             <select
               value={serviceParam}
-              onChange={(e) => updateFilter('service', e.target.value)}
+              onChange={(e) => {
+                updateFilter('service', e.target.value)
+              }}
               aria-label="Filter by service"
               className="h-9 px-3 rounded-[var(--radius-sm)] bg-[var(--color-surface-hover)] border border-[var(--color-border-subtle)] text-[var(--text-xs)] text-[var(--color-text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-focus-ring)] cursor-pointer"
             >
@@ -399,13 +393,17 @@ export function IncidentsPage() {
                         rowRefs.current[index] = el
                       }}
                       selected={isSelected}
-                      onClick={() => navigate(`/incidents/${incident.id}`)}
+                      onClick={() => {
+                        void navigate(`/incidents/${incident.id}`)
+                      }}
                       className={cn(
                         'cursor-pointer select-none group',
                         isHighlighted && 'highlight-incident',
                       )}
                       tabIndex={0}
-                      onFocus={() => setSelectedIndex(index)}
+                      onFocus={() => {
+                        setSelectedIndex(index)
+                      }}
                       aria-label={`Incident ${incident.id}: ${incident.title}`}
                     >
                       {/* Severity */}
@@ -463,7 +461,7 @@ export function IncidentsPage() {
                             initials={
                               incident.assigned_to?.includes('Agent')
                                 ? undefined
-                                : incident.assigned_to
+                                : incident.assigned_to || undefined
                             }
                             size="sm"
                           />
@@ -491,7 +489,9 @@ export function IncidentsPage() {
                   ref={(el) => {
                     rowRefs.current[index] = el
                   }}
-                  onClick={() => navigate(`/incidents/${incident.id}`)}
+                  onClick={() => {
+                    void navigate(`/incidents/${incident.id}`)
+                  }}
                   className={cn(
                     'p-4 cursor-pointer min-h-[44px] transition-all duration-120',
                     'hover:border-[var(--color-border-strong)] active:bg-[var(--color-surface-pressed)]',
@@ -500,7 +500,9 @@ export function IncidentsPage() {
                     isHighlighted && 'highlight-incident',
                   )}
                   tabIndex={0}
-                  onFocus={() => setSelectedIndex(index)}
+                  onFocus={() => {
+                    setSelectedIndex(index)
+                  }}
                   aria-label={`Incident ${incident.id}: ${incident.title}`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">

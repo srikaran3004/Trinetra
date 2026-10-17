@@ -5,22 +5,27 @@ import { cn } from '@/lib/cn'
 
 export interface ErrorStateProps extends HTMLAttributes<HTMLDivElement> {
   title?: string
-  message: string
+  message?: string
+  description?: string
   details?: string
   onRetry?: () => void
   action?: ReactNode
+  actionText?: string
 }
 
 export function ErrorState({
   title = 'Failed to load telemetry',
   message,
+  description,
   details,
   onRetry,
   action,
+  actionText = 'Try again',
   className,
   ...props
 }: ErrorStateProps) {
   const [showDetails, setShowDetails] = useState(false)
+  const displayMessage = message || description || 'An unexpected error occurred.'
 
   return (
     <div
@@ -38,14 +43,14 @@ export function ErrorState({
 
       <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-1">{title}</h4>
       <p className="text-xs text-[var(--color-text-secondary)] max-w-md mb-4 leading-relaxed">
-        {message}
+        {displayMessage}
       </p>
 
       <div className="flex items-center gap-2">
         {onRetry && (
           <Button size="sm" variant="secondary" onPress={onRetry}>
             <RotateCcw size={12} strokeWidth={1.5} />
-            <span>Try again</span>
+            <span>{actionText}</span>
           </Button>
         )}
         {action}

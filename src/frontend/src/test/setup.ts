@@ -17,7 +17,8 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: () => false,
   }),
 })
-
+// Mock scrollIntoView for JSDOM
+window.HTMLElement.prototype.scrollIntoView = () => {}
 // MSW Server lifecycle for test suite
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'bypass' })

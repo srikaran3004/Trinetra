@@ -47,7 +47,9 @@ export function RelativeTime({
       setNow(Date.now())
     }, refreshIntervalMs)
 
-    return () => clearInterval(timer)
+    return () => {
+      clearInterval(timer)
+    }
   }, [refreshIntervalMs])
 
   const formatted = formatAge(date, now)

@@ -49,7 +49,7 @@ describe('Console Shell Layout & Navigation (Task F2-1)', () => {
 
       expect(screen.getByText('Srikaran R')).toBeInTheDocument()
       expect(screen.getByText('SRE Lead')).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: /sign out/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument()
     })
   })
 

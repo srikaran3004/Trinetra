@@ -15,6 +15,7 @@ import { TrinetraLogo } from '@/components/ui/trinetra-logo'
 import { Avatar } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip } from '@/components/ui/tooltip'
+import { useAuth } from '@/auth/auth-context'
 import { cn } from '@/lib/cn'
 
 interface NavItem {
@@ -65,6 +66,16 @@ const navItems: NavItem[] = [
 
 export function Sidebar() {
   const { isCollapsed, isMobileOpen, toggleCollapse, setMobileOpen } = useSidebarStore()
+  const { user, logout } = useAuth()
+
+  const userName = user?.name ?? 'Srikaran R'
+  const userRole = user ? (user.role === 'Admin' ? 'SRE Lead' : user.role) : 'Guest'
+  const initials = userName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase()
 
   return (
     <>
@@ -226,25 +237,28 @@ export function Sidebar() {
               isCollapsed && 'md:justify-center md:p-0',
             )}
           >
-            <Avatar initials="SR" alt="Srikaran R" size="sm" />
+            <Avatar initials={initials} alt={userName} size="sm" />
             {(!isCollapsed || isMobileOpen) && (
               <div className="flex-1 min-w-0">
                 <div className="text-[var(--text-xs)] font-semibold text-[var(--color-text-primary)] truncate">
-                  Srikaran R
+                  {userName}
                 </div>
                 <div className="text-[var(--text-xs)] text-[var(--color-text-tertiary)] truncate">
-                  SRE Lead
+                  {userRole}
                 </div>
               </div>
             )}
             {(!isCollapsed || isMobileOpen) && (
-              <NavLink
-                to="/login"
+              <button
+                type="button"
+                onClick={() => {
+                  logout()
+                }}
                 aria-label="Sign out"
-                className="p-1 text-[var(--color-text-tertiary)] hover:text-[var(--color-critical)] transition-colors rounded-[var(--radius-xs)]"
+                className="p-1 text-[var(--color-text-tertiary)] hover:text-[var(--color-critical)] transition-colors rounded-[var(--radius-xs)] cursor-pointer bg-transparent border-none"
               >
                 <LogOut size={16} />
-              </NavLink>
+              </button>
             )}
           </div>
 

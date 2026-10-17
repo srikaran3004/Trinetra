@@ -21,13 +21,14 @@ test.describe('F2 — Console Shell & Navigation', () => {
 
   test('has dark theme applied by default and toggles via topbar button', async ({ page }) => {
     await page.goto('/')
+    const toggleButton = page.getByRole('button', { name: /switch to (light|dark) theme/i })
+    await expect(toggleButton).toBeVisible()
+
     const initialTheme = await page.evaluate(
       () => document.documentElement.getAttribute('data-theme') ?? '',
     )
     expect(['dark', 'light']).toContain(initialTheme)
 
-    const toggleButton = page.getByRole('button', { name: /switch to (light|dark) theme/i })
-    await expect(toggleButton).toBeVisible()
     const expectedToggle = initialTheme === 'dark' ? 'light' : 'dark'
     await toggleButton.click({ force: true })
 

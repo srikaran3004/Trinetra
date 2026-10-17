@@ -2,10 +2,11 @@ import { useEffect } from 'react'
 import { RouterProvider } from 'react-router'
 import { useThemeStore } from './store/theme'
 import { AuthProvider } from './auth/auth-context'
+import { RealtimeProvider } from './realtime/realtime-context'
 import { router } from './router'
 
 /**
- * App — Root application component with AuthProvider, RouterProvider and theme lifecycle.
+ * App — Root application component with AuthProvider, RealtimeProvider, RouterProvider and theme lifecycle.
  */
 export default function App() {
   const { resolvedTheme, initTheme } = useThemeStore()
@@ -22,7 +23,9 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <RouterProvider router={router} />
+      <RealtimeProvider>
+        <RouterProvider router={router} />
+      </RealtimeProvider>
     </AuthProvider>
   )
 }

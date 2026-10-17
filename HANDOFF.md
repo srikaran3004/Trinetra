@@ -36,13 +36,13 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 
 ## 1. CURRENT STATE
 
-- **Phase:** Frontend Phase F2 — Console shell, routing, mocks
-- **Current Task:** Task F2-4: SignalR event contract defined and mocked
+- **Phase:** Frontend Phase F2 — Console shell, routing, mocks (COMPLETED)
+- **Current Task:** Phase F2 Complete — Awaiting owner push & "continue" for Phase F3
 - **Task Status:** ready
-- **Last Commit SHA:** `4f422bb`
+- **Last Commit SHA:** `606bac3`
 - **Last Device:** `home`
-- **Last Updated:** 2026-10-17 19:35:00+05:30
-- **NEXT ACTION:** Implement Task F2-4 (SignalR event contract defined and mocked).
+- **Last Updated:** 2026-10-17 21:00:00+05:30
+- **NEXT ACTION:** Post Phase F2 Report, intimate owner to push to GitHub, and await "continue" for Phase F3 (Incidents).
 
 ---
 
@@ -179,7 +179,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - [x] **Task F2-1 — Sidebar, topbar, keyboard shortcuts, route transitions**  
 - [x] **Task F2-2 — Login screen + mock AuthProvider + route guard**  
 - [x] **Task F2-3 — MSW handlers for all doc 04 endpoints**  
-- [ ] **Task F2-4 — SignalR event contract defined and mocked**
+- [x] **Task F2-4 — SignalR event contract defined and mocked**
 
 ### Frontend Phase F3 — Incidents
 - [ ] **Task F3-1 — Active incident list (table + cards + SignalR mock)**  
@@ -322,6 +322,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - **2026-10-17 16:55 [home]:** Completed Task F2-1 (Sidebar, topbar, keyboard shortcuts, route transitions); built collapsible Sidebar (240px <-> 64px) with active item marked by background and 3px accent border indicator (not color alone per §4.6), Topbar with breadcrumb titles, demo data environment badge (§10), SignalR live connection indicator with tooltip, theme toggle, and shortcuts helper; implemented useKeyboardShortcuts hook with GitHub navigation chords ('g then i/a/p/r/s', '/', '?', 'Esc'); built CommandPalette with instant fuzzy filtering and keyboard navigation (Decision D-24); built ConsoleLayout with skip-to-content link, polite incident live region, and Motion 160ms route fade transitions with reduced-motion support (§8); created Storybook stories for all 4 layout primitives (Sidebar, Topbar, CommandPalette, KeyboardShortcutsDialog); full vitest suite (68/68 tests passing across 7 test files); Playwright e2e suite passing across Chromium, Firefox, WebKit, Mobile Chrome, Mobile Safari, 768px, 1280px, 1920px viewports; ESLint 0 warnings/errors; Prettier 100% compliant; Vite production build clean.
 - **2026-10-17 17:15 [home]:** Completed Task F2-2 (Login screen + mock AuthProvider + route guard); built in-memory `AuthProvider` strictly keeping access tokens in memory and never in `localStorage` or `sessionStorage` (Brief §10 & Decision D-23) with seeded personas (SRE Lead / Admin, DevOps Operator / Operator, Audit Viewer / Viewer); built `ProtectedRoute` route guard redirecting unauthenticated visitors to `/login` with return destination preservation; built `LoginPage` with accessible form, quick-role fill buttons for testing, loading state, and error handling; wired `useAuth` into `Sidebar` user profile and sign-out button; added Storybook story `login-page.stories.tsx`; implemented 8 unit tests in `auth.test.tsx` verifying token memory invariant, localStorage non-pollution, role switching, and route protection; all 76 unit tests passing; ESLint 0 warnings/errors; Prettier check clean; Vite production build clean. Committed locally per D-26.
 - **2026-10-17 19:35 [home]:** Completed Task F2-3 (MSW handlers for all Doc 04 endpoints); created comprehensive Zod schemas and TypeScript types in `src/api/types.ts` enforcing boundary response validation; implemented typed REST client `ApiClient` in `src/api/client.ts`; created rich seed data fixtures in `src/mocks/seed-data.ts` including critical incident awaiting approval (`INC-2024-8901`), escalated incident (`INC-2024-8902`), resolved incident with guardrail violation (`INC-2024-8899`), 8 autonomous agents, production runbooks, and dashboard metrics; built MSW handlers in `src/mocks/handlers.ts` covering all Doc 04 endpoints (`GET/POST /v1/incidents`, `GET /v1/incidents/:id`, `GET /v1/incidents/:id/events`, `GET /v1/incidents/:id/remediation`, `POST /v1/approvals/:id/approve`, `POST /v1/approvals/:id/reject`, `GET /v1/agents`, `GET /v1/runbooks`, `GET /v1/dashboard/metrics`); setup MSW browser worker and node server; initialized worker conditionally in `main.tsx` (`VITE_MOCK_API`); implemented 24 unit tests in `client.test.ts`; all 100 unit tests passing; ESLint 0 warnings/errors; Prettier check clean; Storybook build clean; Vite production build clean. Committed locally per D-26.
+- **2026-10-17 21:00 [home]:** Completed Task F2-4 (SignalR event contract defined and mocked) and completed Phase F2; defined strictly-typed Zod schemas and TypeScript event mappings in `src/realtime/signalr-events.ts` matching backend `IncidentHub.cs` and `SignalRIncidentEventNotifier.cs` (`IncidentCreated`, `IncidentStatusChanged`, `AgentActionCompleted`, `ApprovalRequired`); built production `SignalRClient` wrapping `@microsoft/signalr` with automatic exponential backoff reconnection (`[0, 2000, 5000, 10000, 30000]`), typed event subscriptions, and in-memory access token factory; built `MockSignalREmitter` in-memory event bus for tests and offline development; built `RealtimeProvider`, `useRealtime` hook, and `useRealtimeSubscription` hook; connected live connection indicator in `Topbar` to `useRealtime()`; connected screen reader `#incident-live-announcer` (`aria-live="polite"`) to announce newly ingested incidents and human approval requests; added 12 unit tests in `signalr.test.tsx` (all 112 unit tests passing); full Playwright e2e test suite passing across all 8 target configurations (Chromium, Firefox, WebKit, Mobile Chrome, Mobile Safari, 768px, 1280px, 1920px viewports); ESLint 0 warnings/errors; Prettier 100% compliant; Vite production build clean; Storybook build clean; Phase F2 complete. Committed locally per D-26.
 
 ---
 

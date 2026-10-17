@@ -6,12 +6,26 @@ import { Topbar } from './topbar'
 import { CommandPalette } from './command-palette'
 import { KeyboardShortcutsDialog } from './keyboard-shortcuts-dialog'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
+import { useRealtime, useRealtimeSubscription } from '@/realtime/realtime-context'
 
 export function ConsoleLayout() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const [announcement, setAnnouncement] = useState('')
   const location = useLocation()
+
+  // Real-time SignalR connection status
+  const { isConnected } = useRealtime()
+
+  // Screen reader incident live announcements (§4.9)
+  useRealtimeSubscription('IncidentCreated', (incident) => {
+    setAnnouncement(`New ${incident.severity} incident created: ${incident.title}`)
+  })
+
+  useRealtimeSubscription('ApprovalRequired', (approval) => {
+    setAnnouncement(`Approval required: ${approval.actionDescription}`)
+  })
 
   // Detect user preference for reduced motion (Brief §8, §9)
   useEffect(() => {
@@ -57,7 +71,9 @@ export function ConsoleLayout() {
         aria-live="polite"
         aria-atomic="true"
         className="sr-only"
-      />
+      >
+        {announcement}
+      </div>
 
       {/* Persistent / Responsive Sidebar */}
       <Sidebar />
@@ -72,7 +88,7 @@ export function ConsoleLayout() {
           onOpenShortcuts={() => {
             setIsShortcutsOpen(true)
           }}
-          isConnected={true}
+          isConnected={isConnected}
         />
 
         {/* Content View with Route Transitions */}

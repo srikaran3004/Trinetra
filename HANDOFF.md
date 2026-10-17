@@ -35,13 +35,13 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 
 ## 1. CURRENT STATE
 
-- **Phase:** Phase 5 — Execution and Polish (Completed)
-- **Current Task:** Phase 5 complete; all 5 phases of Trinetra MVP are implemented, tested, and verified.
-- **Task Status:** done (All phases complete: Phase 1, Phase 2, Phase 3, Phase 4, Phase 5)
-- **Last Commit SHA:** `3c6ea6a`
-- **Last Device:** `office`
-- **Last Updated:** 2026-10-17 11:15:00+05:30
-- **NEXT ACTION:** Deliver Phase 5 final milestone report. System ready for deployment and container verification on home laptop.
+- **Phase:** Frontend Phase F0 — Remove Angular and scaffold React (In Progress)
+- **Current Task:** F0-1: Remove Angular template, F0-2: Scaffold React + Vite + TypeScript
+- **Task Status:** doing
+- **Last Commit SHA:** `cbaf449`
+- **Last Device:** `home`
+- **Last Updated:** 2026-10-17 12:33:00+05:30
+- **NEXT ACTION:** Complete F0 — delete Angular in commit 1, scaffold React in commit 2, push both, post F0 report.
 
 ---
 
@@ -50,7 +50,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 | Label | Hostname | OS | Tools (dotnet, node, docker, psql, browser) | Can run containers | Last verified |
 |---|---|---|---|---|---|
 | office | LIN-J9ZBCR3 | Windows 11 (10.0.26200) | dotnet (10.0.401, net8 roll-forward), browser (Edge, Chrome); node, docker, psql missing | No | 2026-10-16 19:04:31+05:30 |
-| home | unknown | unknown | not yet verified | not yet verified | not yet verified |
+| home | Asus-Vivobook-15 | Windows 11 | node v22.22.2, npm 10.9.7, dotnet (TBD), docker (TBD) | TBD | 2026-10-17 12:33:00+05:30 |
 
 ---
 
@@ -158,7 +158,51 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
   *Done when:* Complete simulated incident runs from alert webhook to auto-remediation and post-mortem verification.  
   *Tested on:* office
 
----
+### Frontend Phase F0 — Remove Angular and scaffold React
+- [ ] **Task F0-1 — Remove Angular template**  
+  *Done when:* `src/frontend/` is deleted in one commit `frontend: remove Angular template`.  
+  *Tested on:* home
+- [ ] **Task F0-2 — Scaffold React + Vite + TypeScript**  
+  *Done when:* Vite + React 19 + TypeScript strict scaffolded in `src/frontend/`; ESLint, Prettier, Vitest, Playwright, Storybook, MSW configured; `npm run dev`, `lint`, `test`, `build` all pass; app renders "Trinetra" placeholder in both dark and light themes.  
+  *Tested on:* home
+
+### Frontend Phase F1 — Design foundations
+- [ ] **Task F1-1 — Three-tier design tokens**  
+- [ ] **Task F1-2 — Theme switching with persistence**  
+- [ ] **Task F1-3 — Base components (actions, inputs, display, overlays, feedback)**  
+- [ ] **Task F1-4 — Storybook stories + axe pass + contrast test + lint rules**
+
+### Frontend Phase F2 — Console shell, routing, mocks
+- [ ] **Task F2-1 — Sidebar, topbar, keyboard shortcuts, route transitions**  
+- [ ] **Task F2-2 — Login screen + mock AuthProvider + route guard**  
+- [ ] **Task F2-3 — MSW handlers for all doc 04 endpoints**  
+- [ ] **Task F2-4 — SignalR event contract defined and mocked**
+
+### Frontend Phase F3 — Incidents
+- [ ] **Task F3-1 — Active incident list (table + cards + SignalR mock)**  
+- [ ] **Task F3-2 — Incident detail (StateProgress, root cause, remediation, timeline)**
+
+### Frontend Phase F4 — Agents and approvals
+- [ ] **Task F4-1 — Agent activity monitor**  
+- [ ] **Task F4-2 — Approval queue (Countdown, typed confirm, deny with reason, optimistic)**
+
+### Frontend Phase F5 — History, runbooks, settings
+- [ ] **Task F5-1 — History charts + text summaries + table views**  
+- [ ] **Task F5-2 — Runbook viewer (sanitized markdown)**  
+- [ ] **Task F5-3 — Settings screen**
+
+### Frontend Phase F6 — Landing page and motion
+- [ ] **Task F6-1 — Landing sections (hero, workflow diagram, guardrails, targets)**  
+- [ ] **Task F6-2 — Magnetic CTA, mesh backdrop, feature spotlight**  
+- [ ] **Task F6-3 — Reduced-motion variants + Lighthouse budgets**
+
+### Frontend Phase F7 — Hardening
+- [ ] **Task F7-1 — Manual keyboard checklist + a11y checklist doc**  
+- [ ] **Task F7-2 — Cross-browser e2e (chromium, firefox, webkit)**  
+- [ ] **Task F7-3 — i18n extraction complete + RTL smoke test**  
+- [ ] **Task F7-4 — Frontend README + final HANDOFF.md**
+
+
 
 ## 5. DECISIONS
 
@@ -178,6 +222,17 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 | D-12 | 2026-10-16 | Users API key: Removed CHECK constraint on user creation | Enables user creation prior to API key provisioning | office |
 | D-13 | 2026-10-16 | Real-time: ASP.NET Core SignalR (not Socket.io) | Native .NET technology; first-class Angular `@microsoft/signalr` integration | office |
 | D-14 | 2026-10-16 | Single source of truth: `HANDOFF.md` | Eliminates reliance on lost chat history across office and home development laptops | office |
+| D-15 | 2026-10-17 | Frontend framework: React 19 + Vite + TypeScript strict (replaces Angular 17) | Owner's explicit decision in FRONTEND_DESIGN_AND_BUILD_PROMPT.md; supersedes D-3 | home |
+| D-16 | 2026-10-17 | Styling: Tailwind CSS v4 with @theme; all values from CSS custom-property tokens | Design brief mandate; enables full three-tier token system | home |
+| D-17 | 2026-10-17 | Accessible primitives: react-aria-components | Single accessibility layer; used by all custom components | home |
+| D-18 | 2026-10-17 | Component pattern: shadcn/ui-style copy-in under src/components/ui/ with cva variants | No runtime shadcn dep; repo owns all component source | home |
+| D-19 | 2026-10-17 | Animation: motion/react (Motion for React) | Replaces GSAP unless a specific landing effect requires it (logged if added) | home |
+| D-20 | 2026-10-17 | Server state: TanStack Query; UI state: Zustand | Replaces NgRx; doc 01 named Redux Toolkit — overridden by build brief | home |
+| D-21 | 2026-10-17 | Routing: React Router v7 (data router) | Brief mandate; enables prefetching on hover and focus | home |
+| D-22 | 2026-10-17 | Real-time: @microsoft/signalr (not Socket.io) | Backend is ASP.NET Core; SignalR is native. Doc 01 named Socket.io — brief wins | home |
+| D-23 | 2026-10-17 | Auth token in memory only, never localStorage | Security requirement; brief §10 is explicit | home |
+| D-24 | 2026-10-17 | CommandPalette: included | Adds discoverability for power users with no meaningful cost; logged as optional in brief | home |
+| D-25 | 2026-10-17 | Prerender step for `/`: skip for F6; decide in F6 if it fits in under one day | Brief §4.6 makes prerender optional; log the decision in F6 SESSION LOG | home |
 
 ---
 
@@ -199,6 +254,17 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 | SI-12 | 03_DB `users` table | `CHECK ((NOT is_active) OR (api_key_hash IS NOT NULL))` blocks user creation | Removed constraint; API keys assigned via dedicated endpoint |
 | SI-13 | 02_ARCH §Presentation | Socket.io mentioned instead of .NET real-time stack | Standardized on ASP.NET Core SignalR (`/hubs/incidents`) |
 | SI-14 | 05_AGENTS sample outputs | Sample numbers in agent outputs could be mistaken for assertions | Documented as illustrative examples, not rigid test fixture baselines |
+| SI-15 | 01_SPEC §Frontend | Angular 17+ was chosen; FRONTEND_DESIGN_AND_BUILD_PROMPT.md mandates React 19 | Brief wins; Angular deleted in F0. Decision D-15 supersedes D-3 |
+| SI-16 | 01_SPEC §State | Redux Toolkit named for frontend state | Brief mandates Zustand (UI state) + TanStack Query (server state); Decision D-20 |
+| SI-17 | 01_SPEC §UI | MUI or Bootstrap named for component library | Brief mandates custom system on react-aria-components + Tailwind v4; Decision D-16–D-18 |
+| SI-18 | 02_ARCH §Presentation | Socket.io named for frontend real-time | Brief mandates @microsoft/signalr; Decision D-22 (consistent with D-13 on backend) |
+| SI-19 | 04_API | No `/api/v1/auth/login` or `/api/v1/auth/refresh` endpoints documented | Frontend uses mock AuthProvider; gap logged for backend. Brief §10 notes this |
+| SI-20 | 04_API | No SignalR hub event contract in doc 04 | Define contract in F2; mock it. Logged as spec gap per brief §10 |
+| SI-21 | 04_API | No post-mortem retrieval endpoint defined | Show "Not generated" placeholder; logged as gap per brief §7.7 |
+| SI-22 | 04_API | No `/runbooks` console screen in doc 09 | Added read-only Runbooks screen per brief §7.8; Decision logged |
+| SI-23 | 09_ROADMAP | Performance targets (MTTR <15min, etc.) presented as results | Labeled "Target" in UI; never presented as measured. Brief §7.1 is explicit |
+| SI-24 | 00_INDEX | References docs 10–15 that do not exist | Same as SI-1; do not create those docs in this build |
+| SI-25 | 05_AGENTS §sample outputs | Illustrative numbers could be used as test fixtures | Not used as fixtures; MSW seed data uses its own defined schema |
 
 ---
 

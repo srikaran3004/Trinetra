@@ -1,5 +1,7 @@
 import '@testing-library/jest-dom'
-import { afterEach } from 'vitest'
+import { beforeAll, afterEach, afterAll } from 'vitest'
+import { server } from '../mocks/server'
+import { resetMockDatabase } from '../mocks/handlers'
 
 // Mock matchMedia for JSDOM
 Object.defineProperty(window, 'matchMedia', {
@@ -16,7 +18,16 @@ Object.defineProperty(window, 'matchMedia', {
   }),
 })
 
-// Reset all mocks after each test
+// MSW Server lifecycle for test suite
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'bypass' })
+})
+
 afterEach(() => {
-  // MSW will be configured in src/mocks/server.ts (added in F2)
+  server.resetHandlers()
+  resetMockDatabase()
+})
+
+afterAll(() => {
+  server.close()
 })

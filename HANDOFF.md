@@ -36,13 +36,13 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 
 ## 1. CURRENT STATE
 
-- **Phase:** Frontend Phase F1 — Design foundations (In Progress)
-- **Current Task:** Task F1-5: Contrast unit test + Storybook a11y audit + custom lint rules verification
-- **Task Status:** doing
-- **Last Commit SHA:** `142b330`
+- **Phase:** Frontend Phase F2 — Console shell, routing, mocks (Ready to Start)
+- **Current Task:** Task F2-1: Sidebar, topbar, keyboard shortcuts, route transitions
+- **Task Status:** ready
+- **Last Commit SHA:** `047e287`
 - **Last Device:** `home`
-- **Last Updated:** 2026-10-17 15:43:00+05:30
-- **NEXT ACTION:** Implement contrast unit test, run Storybook a11y verification, and complete Phase F1.
+- **Last Updated:** 2026-10-17 16:13:00+05:30
+- **NEXT ACTION:** Await user "continue" to begin Phase F2 after owner pushes Phase F1 commits.
 
 ---
 
@@ -173,7 +173,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - [x] **Task F1-2 — Inputs components (TextField, TextArea, Select, Combobox, Checkbox, Switch, RadioGroup, SegmentedControl, DateRange) + Stories & Tests**  
 - [x] **Task F1-3 — Display components (Badge, StatusDot, Avatar, Card, Panel, MetricTile, Countdown, CodeBlock, MarkdownView) + Stories & Tests**  
 - [x] **Task F1-4 — Overlays & Feedback components (Tooltip, Popover, Menu, Dialog, Toast, Skeleton, Spinner, InlineAlert, EmptyState, ErrorState, ProgressBar) + Stories & Tests**  
-- [ ] **Task F1-5 — Contrast unit test + Storybook a11y audit + custom lint rules verification**
+- [x] **Task F1-5 — Contrast unit test + Storybook a11y audit + custom lint rules verification**
 
 ### Frontend Phase F2 — Console shell, routing, mocks
 - [ ] **Task F2-1 — Sidebar, topbar, keyboard shortcuts, route transitions**  
@@ -318,6 +318,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - **2026-10-17 15:10 [home]:** Completed Task F1-2 (Inputs components: TextField, TextArea, Select, Combobox, Checkbox, Switch, RadioGroup, SegmentedControl, DateRange); built React Aria Component wrappers with CVA token-based variants and strict WCAG accessibility attributes (labels, field errors, slots, focus rings, keyboard navigation), full Storybook stories for all variants and states, and 10 unit tests in `inputs.test.tsx`; verified build, format, lint (zero warnings), storybook build (clean in 23s), and vitest (25/25 passing). Committed locally per D-26 (owner pushes to GitHub).
 - **2026-10-17 15:22 [home]:** Completed Task F1-3 (Display components: Badge, StatusDot, Avatar, Card, Panel, MetricTile, Countdown, CodeBlock, MarkdownView); built semantic token-styled display primitives with explicit Target badges (§7.1/§14), 15-minute countdown timeout behavior with <=60s seconds display and minute boundary screen reader updates (§7.6), Geist Mono copyable code blocks, DOMPurify sanitized markdown view, full Storybook stories for all 9 components, and 16 unit tests in `display.test.tsx` (including markdown sanitizer XSS attack gate); verified build, format, lint (zero warnings), storybook build (clean in 25s), and vitest (41/41 passing). Committed locally per D-26.
 - **2026-10-17 15:43 [home]:** Completed Task F1-4 (Overlays & Feedback components: Tooltip, Popover, Menu, Dialog, Toast, Skeleton, Spinner, InlineAlert, EmptyState, ErrorState, ProgressBar); built accessible overlay primitives with 400ms tooltip delay (§4.2), high-risk typed confirmation dialogs requiring incident ID typing before enabling (§7.6), Sonner token-themed toast wrapper, spinner timeout safeguard path (§13), full Storybook stories for all 11 components, and 12 unit tests in `overlays-feedback.test.tsx`; verified build, format, lint (zero warnings), storybook build (clean in 31s), and vitest (53/53 passing). Committed locally per D-26.
+- **2026-10-17 15:58 [home]:** Completed Task F1-5 (Contrast unit test + Storybook a11y audit + custom lint rules verification) and completed Phase F1; exported dual dark/light token sets in `tokens.json`; implemented WCAG 2.2 mathematical relative luminance and contrast ratio tests in `src/test/tokens/contrast.test.ts` (body text >= 4.5:1, UI/status >= 3.0:1 across both themes); verified Storybook 8 build with `@storybook/addon-a11y` (built cleanly in 21s); verified custom token-enforcement ESLint rules (0 warnings, 0 errors); full vitest suite (57/57 tests passing); Playwright cross-browser e2e suite (64/64 tests passing across Chromium, Firefox, WebKit, Mobile Chrome, Mobile Safari, 768px, 1280px, 1920px viewports); Phase F1 complete.
 
 ---
 

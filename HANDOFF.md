@@ -39,7 +39,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - **Phase:** Frontend Phase F3 — Incidents (In Progress)
 - **Current Task:** Task F3-2 — Incident detail (StateProgress, root cause, remediation, timeline)
 - **Task Status:** ready
-- **Last Commit SHA:** `f980db7`
+- **Last Commit SHA:** `0e5bf09`
 - **Last Device:** `home`
 - **Last Updated:** 2026-10-17 22:30:00+05:30
 - **NEXT ACTION:** Start Task F3-2 — Build incident detail view with StateProgress, root cause analysis card, remediation proposal options with backend verdict display, and agent audit timeline with guardrail highlight.

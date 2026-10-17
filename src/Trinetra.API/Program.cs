@@ -21,6 +21,7 @@ using Trinetra.Agents.MetricsQuerier;
 using Trinetra.Agents.Orchestration;
 using Trinetra.Agents.RunbookRetriever;
 using Trinetra.Agents.RootCauseAnalyzer;
+using Trinetra.Agents.Guardrails;
 using Trinetra.Agents.RemediationProposer;
 using Trinetra.API.Hubs;
 using Trinetra.API.Services;
@@ -228,6 +229,9 @@ builder.Services.AddScoped<RemediationProposerAgent>(sp =>
 
     return new RemediationProposerAgent(config, kernel, logger, plugin, store, auditWriter);
 });
+
+// 5b. Guardrails Engine (singleton — stateless compiled regex rules)
+builder.Services.AddSingleton<IGuardrailsEngine, GuardrailsEngine>();
 
 // 6. SignalR & Workflow
 builder.Services.AddSignalR();

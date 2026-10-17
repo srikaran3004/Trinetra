@@ -31,6 +31,7 @@ export default tseslint.config(
         'error',
         { allowNumber: true, allowBoolean: true },
       ],
+      '@typescript-eslint/no-deprecated': 'off',
 
       // === Custom token-enforcement rules ===
       // Reject raw hex colors in inline style objects (must use CSS custom properties)

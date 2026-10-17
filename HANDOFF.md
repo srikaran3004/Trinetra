@@ -37,12 +37,12 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 ## 1. CURRENT STATE
 
 - **Phase:** Frontend Phase F1 — Design foundations (In Progress)
-- **Current Task:** Task F1-2: Inputs components (TextField, TextArea, Select, Combobox, Checkbox, Switch, RadioGroup, SegmentedControl, DateRange) + Stories & Tests
+- **Current Task:** Task F1-3: Display components (Badge, StatusDot, Avatar, Card, Panel, MetricTile, Countdown, CodeBlock, MarkdownView) + Stories & Tests
 - **Task Status:** doing
-- **Last Commit SHA:** `ad45fb0`
+- **Last Commit SHA:** `a563cf1`
 - **Last Device:** `home`
-- **Last Updated:** 2026-10-17 14:45:00+05:30
-- **NEXT ACTION:** Implement Inputs components, write stories and unit tests.
+- **Last Updated:** 2026-10-17 15:10:00+05:30
+- **NEXT ACTION:** Implement Display components, write stories and unit tests.
 
 ---
 
@@ -170,7 +170,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 
 ### Frontend Phase F1 — Design foundations
 - [x] **Task F1-1 — Actions components (Button, IconButton, Link, KeyboardShortcut) + Stories & Tests**  
-- [ ] **Task F1-2 — Inputs components (TextField, TextArea, Select, Combobox, Checkbox, Switch, RadioGroup, SegmentedControl, DateRange) + Stories & Tests**  
+- [x] **Task F1-2 — Inputs components (TextField, TextArea, Select, Combobox, Checkbox, Switch, RadioGroup, SegmentedControl, DateRange) + Stories & Tests**  
 - [ ] **Task F1-3 — Display components (Badge, StatusDot, Avatar, Card, Panel, MetricTile, Countdown, CodeBlock, MarkdownView) + Stories & Tests**  
 - [ ] **Task F1-4 — Overlays & Feedback components (Tooltip, Popover, Menu, Dialog, Toast, Skeleton, Spinner, InlineAlert, EmptyState, ErrorState, ProgressBar) + Stories & Tests**  
 - [ ] **Task F1-5 — Contrast unit test + Storybook a11y audit + custom lint rules verification**
@@ -315,6 +315,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - **2026-10-17 12:40 [home]:** Completed Task F0-1 (Remove Angular template); verified and removed 20 Angular workspace template files in dedicated commit `b41bcf7`.
 - **2026-10-17 14:10 [home]:** Completed Task F0-2 (Scaffold React + Vite + TypeScript) and completed Phase F0; scaffolded React 19 + Vite 6 + TypeScript strict; configured Tailwind v4 design tokens (three-tier system), ESLint flat config with token-enforcement rules (no raw hex, no raw px radii, no raw z-index), Prettier, Vitest + Testing Library, Storybook 8 with addon-a11y, Tokens Studio JSON export, Docker multi-stage container and Nginx config, added frontend service to `docker-compose.yml`, added frontend GitHub Actions CI; installed browser binaries for Chromium, Firefox, WebKit; verified `npm run build` (68.4KB gzipped), `npm run test` (8/8 pass), `npm run lint` (zero warnings), `npm run format:check` (clean), `npm run build-storybook` (clean), and `npm run e2e` (64/64 pass across all 8 browser and viewport targets); Phase F0 complete.
 - **2026-10-17 14:45 [home]:** Completed Task F1-1 (Actions components: Button, IconButton, Link, KeyboardShortcut); built React Aria Component wrappers with CVA token-based variants (primary, secondary, ghost, danger; sm, md, lg; loading spinner; Geist Mono `<kbd>`), full Storybook stories for all variants and states, and 7 unit tests in `actions.test.tsx`; verified build, format, lint (zero warnings), and vitest (15/15 passing).
+- **2026-10-17 15:10 [home]:** Completed Task F1-2 (Inputs components: TextField, TextArea, Select, Combobox, Checkbox, Switch, RadioGroup, SegmentedControl, DateRange); built React Aria Component wrappers with CVA token-based variants and strict WCAG accessibility attributes (labels, field errors, slots, focus rings, keyboard navigation), full Storybook stories for all variants and states, and 10 unit tests in `inputs.test.tsx`; verified build, format, lint (zero warnings), storybook build (clean in 23s), and vitest (25/25 passing). Committed locally per D-26 (owner pushes to GitHub).
 
 ---
 

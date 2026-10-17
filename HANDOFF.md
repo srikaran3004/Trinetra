@@ -35,13 +35,13 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 
 ## 1. CURRENT STATE
 
-- **Phase:** Frontend Phase F0 — Remove Angular and scaffold React (Completed)
-- **Current Task:** F0 complete; scaffold verified across build, unit tests, lint, format, storybook, and full cross-browser e2e (chromium, firefox, webkit).
-- **Task Status:** done
-- **Last Commit SHA:** `b41bcf7`
+- **Phase:** Frontend Phase F1 — Design foundations (In Progress)
+- **Current Task:** Task F1-2: Inputs components (TextField, TextArea, Select, Combobox, Checkbox, Switch, RadioGroup, SegmentedControl, DateRange) + Stories & Tests
+- **Task Status:** doing
+- **Last Commit SHA:** `ad45fb0`
 - **Last Device:** `home`
-- **Last Updated:** 2026-10-17 14:10:00+05:30
-- **NEXT ACTION:** Await owner "continue" to begin Frontend Phase F1 — Design foundations.
+- **Last Updated:** 2026-10-17 14:45:00+05:30
+- **NEXT ACTION:** Implement Inputs components, write stories and unit tests.
 
 ---
 
@@ -167,10 +167,11 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
   *Tested on:* home (build, vitest 8/8, eslint zero warnings, prettier check, storybook build, playwright 64/64 pass across chromium/firefox/webkit)
 
 ### Frontend Phase F1 — Design foundations
-- [ ] **Task F1-1 — Three-tier design tokens**  
-- [ ] **Task F1-2 — Theme switching with persistence**  
-- [ ] **Task F1-3 — Base components (actions, inputs, display, overlays, feedback)**  
-- [ ] **Task F1-4 — Storybook stories + axe pass + contrast test + lint rules**
+- [x] **Task F1-1 — Actions components (Button, IconButton, Link, KeyboardShortcut) + Stories & Tests**  
+- [ ] **Task F1-2 — Inputs components (TextField, TextArea, Select, Combobox, Checkbox, Switch, RadioGroup, SegmentedControl, DateRange) + Stories & Tests**  
+- [ ] **Task F1-3 — Display components (Badge, StatusDot, Avatar, Card, Panel, MetricTile, Countdown, CodeBlock, MarkdownView) + Stories & Tests**  
+- [ ] **Task F1-4 — Overlays & Feedback components (Tooltip, Popover, Menu, Dialog, Toast, Skeleton, Spinner, InlineAlert, EmptyState, ErrorState, ProgressBar) + Stories & Tests**  
+- [ ] **Task F1-5 — Contrast unit test + Storybook a11y audit + custom lint rules verification**
 
 ### Frontend Phase F2 — Console shell, routing, mocks
 - [ ] **Task F2-1 — Sidebar, topbar, keyboard shortcuts, route transitions**  
@@ -310,6 +311,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - **2026-10-17 11:14 [office]:** Completed Task 5.4 (E2E Incident Simulation & Verification) and completed Phase 5; implemented comprehensive end-to-end integration test suite `E2EIncidentSimulationTests.cs` covering: (1) full autonomous incident lifecycle from alert webhook ingestion -> parallel investigation -> root cause analysis -> automated remediation -> post-mortem report -> pgvector history indexing and full audit trail verification, (2) non-bypassable guardrail interception of destructive commands with incident escalation, (3) human-in-the-loop approval workflow gate with RBAC JWT authentication; committed `3c6ea6a` and pushed; all 186 tests (165 unit + 21 integration) passing cleanly; Phase 5 complete — entire 5-phase Trinetra MVP successfully implemented!
 - **2026-10-17 12:40 [home]:** Completed Task F0-1 (Remove Angular template); verified and removed 20 Angular workspace template files in dedicated commit `b41bcf7`.
 - **2026-10-17 14:10 [home]:** Completed Task F0-2 (Scaffold React + Vite + TypeScript) and completed Phase F0; scaffolded React 19 + Vite 6 + TypeScript strict; configured Tailwind v4 design tokens (three-tier system), ESLint flat config with token-enforcement rules (no raw hex, no raw px radii, no raw z-index), Prettier, Vitest + Testing Library, Storybook 8 with addon-a11y, Tokens Studio JSON export, Docker multi-stage container and Nginx config, added frontend service to `docker-compose.yml`, added frontend GitHub Actions CI; installed browser binaries for Chromium, Firefox, WebKit; verified `npm run build` (68.4KB gzipped), `npm run test` (8/8 pass), `npm run lint` (zero warnings), `npm run format:check` (clean), `npm run build-storybook` (clean), and `npm run e2e` (64/64 pass across all 8 browser and viewport targets); Phase F0 complete.
+- **2026-10-17 14:45 [home]:** Completed Task F1-1 (Actions components: Button, IconButton, Link, KeyboardShortcut); built React Aria Component wrappers with CVA token-based variants (primary, secondary, ghost, danger; sm, md, lg; loading spinner; Geist Mono `<kbd>`), full Storybook stories for all variants and states, and 7 unit tests in `actions.test.tsx`; verified build, format, lint (zero warnings), and vitest (15/15 passing).
 
 ---
 

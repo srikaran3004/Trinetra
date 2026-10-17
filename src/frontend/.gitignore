@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Allow src/lib (overrides root python lib/ ignore)
+!src/lib/
+!src/lib/**
+
+# Build outputs
+dist/
+dist-ssr/
+storybook-static/
+coverage/
+
+# Playwright & test artifacts
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Cache
+.eslintcache
+*.tsbuildinfo
+node_modules/.tmp/
+
+# Env local files
+.env
+.env.local
+.env.*.local
+
+# Editor & OS
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln.docstates

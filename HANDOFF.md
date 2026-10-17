@@ -35,13 +35,13 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 
 ## 1. CURRENT STATE
 
-- **Phase:** Frontend Phase F0 — Remove Angular and scaffold React (In Progress)
-- **Current Task:** F0-1: Remove Angular template, F0-2: Scaffold React + Vite + TypeScript
-- **Task Status:** doing
-- **Last Commit SHA:** `cbaf449`
+- **Phase:** Frontend Phase F0 — Remove Angular and scaffold React (Completed)
+- **Current Task:** F0 complete; scaffold verified across build, unit tests, lint, format, storybook, and full cross-browser e2e (chromium, firefox, webkit).
+- **Task Status:** done
+- **Last Commit SHA:** `b41bcf7`
 - **Last Device:** `home`
-- **Last Updated:** 2026-10-17 12:33:00+05:30
-- **NEXT ACTION:** Complete F0 — delete Angular in commit 1, scaffold React in commit 2, push both, post F0 report.
+- **Last Updated:** 2026-10-17 14:10:00+05:30
+- **NEXT ACTION:** Await owner "continue" to begin Frontend Phase F1 — Design foundations.
 
 ---
 
@@ -50,7 +50,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 | Label | Hostname | OS | Tools (dotnet, node, docker, psql, browser) | Can run containers | Last verified |
 |---|---|---|---|---|---|
 | office | LIN-J9ZBCR3 | Windows 11 (10.0.26200) | dotnet (10.0.401, net8 roll-forward), browser (Edge, Chrome); node, docker, psql missing | No | 2026-10-16 19:04:31+05:30 |
-| home | Asus-Vivobook-15 | Windows 11 | node v22.22.2, npm 10.9.7, dotnet (TBD), docker (TBD) | TBD | 2026-10-17 12:33:00+05:30 |
+| home | Asus-Vivobook-15 | Windows 11 | node v22.22.2, npm 10.9.7, playwright (chromium, firefox, webkit installed) | TBD | 2026-10-17 14:10:00+05:30 |
 
 ---
 
@@ -159,12 +159,12 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
   *Tested on:* office
 
 ### Frontend Phase F0 — Remove Angular and scaffold React
-- [ ] **Task F0-1 — Remove Angular template**  
+- [x] **Task F0-1 — Remove Angular template**  
   *Done when:* `src/frontend/` is deleted in one commit `frontend: remove Angular template`.  
-  *Tested on:* home
-- [ ] **Task F0-2 — Scaffold React + Vite + TypeScript**  
+  *Tested on:* home (commit `b41bcf7`)
+- [x] **Task F0-2 — Scaffold React + Vite + TypeScript**  
   *Done when:* Vite + React 19 + TypeScript strict scaffolded in `src/frontend/`; ESLint, Prettier, Vitest, Playwright, Storybook, MSW configured; `npm run dev`, `lint`, `test`, `build` all pass; app renders "Trinetra" placeholder in both dark and light themes.  
-  *Tested on:* home
+  *Tested on:* home (build, vitest 8/8, eslint zero warnings, prettier check, storybook build, playwright 64/64 pass across chromium/firefox/webkit)
 
 ### Frontend Phase F1 — Design foundations
 - [ ] **Task F1-1 — Three-tier design tokens**  
@@ -308,6 +308,8 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - **2026-10-17 10:58 [office]:** Completed Task 5.2 (Auto-Executor Agent & Process Sandbox); implemented `ICommandSandbox` and `ProcessCommandSandbox` cross-platform process isolation with timeout and tree termination, `AutoExecutorPlugin` (SK tools `execute_remediation_command`, `run_preflight_checks`, `run_postflight_checks`, `execute_rollback`), `AutoExecutorAgent` enforcing mandatory guardrails check prior to any command execution, preflight checks, step-by-step execution, postflight verification, automatic rollback on failure, audit trail logging in `incident_events`, and incident state transition to `Resolved`; implemented `AutoExecutorWorker` background Redis stream consumer and registered in `Program.cs` invoker; added 7 unit tests in `AutoExecutorTests.cs`; committed `ca65177` and pushed; all 179 tests (161 unit + 18 integration) passing cleanly.
 - **2026-10-17 11:06 [office]:** Completed Task 5.3 (Post-Incident Report Generator & History); implemented `PostMortemModels`, `IIncidentHistoryRepository` and `DbIncidentHistoryRepository` with pgvector similarity search (`<=>`) and in-memory fallback, `PostMortemPlugin` generating structured SRE Markdown documents and action items, `PostMortemAgent` compiling incident timelines, generating Markdown post-mortems, computing 1536-dim vector embeddings, and indexing in `incident_histories`, implemented `PostMortemWorker` background stream consumer and registered in `Program.cs` invoker; added 4 unit tests in `PostMortemTests.cs`; committed `3a41888` and pushed; all 183 tests (165 unit + 18 integration) passing cleanly.
 - **2026-10-17 11:14 [office]:** Completed Task 5.4 (E2E Incident Simulation & Verification) and completed Phase 5; implemented comprehensive end-to-end integration test suite `E2EIncidentSimulationTests.cs` covering: (1) full autonomous incident lifecycle from alert webhook ingestion -> parallel investigation -> root cause analysis -> automated remediation -> post-mortem report -> pgvector history indexing and full audit trail verification, (2) non-bypassable guardrail interception of destructive commands with incident escalation, (3) human-in-the-loop approval workflow gate with RBAC JWT authentication; committed `3c6ea6a` and pushed; all 186 tests (165 unit + 21 integration) passing cleanly; Phase 5 complete — entire 5-phase Trinetra MVP successfully implemented!
+- **2026-10-17 12:40 [home]:** Completed Task F0-1 (Remove Angular template); verified and removed 20 Angular workspace template files in dedicated commit `b41bcf7`.
+- **2026-10-17 14:10 [home]:** Completed Task F0-2 (Scaffold React + Vite + TypeScript) and completed Phase F0; scaffolded React 19 + Vite 6 + TypeScript strict; configured Tailwind v4 design tokens (three-tier system), ESLint flat config with token-enforcement rules (no raw hex, no raw px radii, no raw z-index), Prettier, Vitest + Testing Library, Storybook 8 with addon-a11y, Tokens Studio JSON export, Docker multi-stage container and Nginx config, added frontend service to `docker-compose.yml`, added frontend GitHub Actions CI; installed browser binaries for Chromium, Firefox, WebKit; verified `npm run build` (68.4KB gzipped), `npm run test` (8/8 pass), `npm run lint` (zero warnings), `npm run format:check` (clean), `npm run build-storybook` (clean), and `npm run e2e` (64/64 pass across all 8 browser and viewport targets); Phase F0 complete.
 
 ---
 

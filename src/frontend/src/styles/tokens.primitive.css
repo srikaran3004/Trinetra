@@ -1,0 +1,62 @@
+/* ==========================================================================
+   Trinetra Design Tokens — Tier 1: Primitives
+   Raw values. NEVER used directly by components.
+   Components use semantic tokens from tokens.css.
+   ========================================================================== */
+
+:root {
+  /* Raw color palette — Stripe-derived indigo-violet + cool navy-black neutrals */
+  --primitive-indigo-50: #eef2ff;
+  --primitive-indigo-100: #e0e7ff;
+  --primitive-indigo-200: #c7d2fe;
+  --primitive-indigo-300: #a5b4fc;
+  --primitive-indigo-400: #818cf8;
+  --primitive-indigo-500: #635bff;
+  --primitive-indigo-600: #5148e8;
+  --primitive-indigo-700: #4338ca;
+  --primitive-indigo-800: #3730a3;
+  --primitive-indigo-900: #312e81;
+
+  /* Violet (dark-mode accent family) */
+  --primitive-violet-400: #a78bfa;
+  --primitive-violet-500: #8b84ff;
+  --primitive-violet-600: #7c72f8;
+
+  /* Navy-black neutrals */
+  --primitive-navy-950: #08090d;
+  --primitive-navy-900: #0f1117;
+  --primitive-navy-850: #13161f;
+  --primitive-navy-800: #1b2030;
+  --primitive-navy-750: #222839;
+  --primitive-navy-700: #2a3145;
+
+  /* Light neutrals */
+  --primitive-gray-50: #fafafb;
+  --primitive-gray-100: #f2f3f6;
+  --primitive-gray-150: #e9ebf0;
+  --primitive-gray-200: #d4d8e2;
+  --primitive-gray-300: #a4adbe;
+  --primitive-gray-400: #7d8698;
+  --primitive-gray-500: #6b7285;
+  --primitive-gray-600: #4a5162;
+  --primitive-gray-700: #343a4f;
+  --primitive-gray-800: #252b3d;
+  --primitive-gray-900: #181d2e;
+  --primitive-gray-950: #0e1116;
+
+  /* Status primitives */
+  --primitive-red-400: #ff6b6b;
+  --primitive-red-600: #d92d2d;
+  --primitive-orange-400: #ff9f4a;
+  --primitive-orange-600: #c2560b;
+  --primitive-amber-400: #f5c542;
+  --primitive-amber-600: #9a6b00;
+  --primitive-blue-400: #5b9dff;
+  --primitive-blue-600: #1d5fcc;
+  --primitive-green-400: #3dd68c;
+  --primitive-green-600: #17804a;
+
+  /* Landing-only gradient colors (NEVER use for status) */
+  --primitive-gradient-cyan: #00d1ff;
+  --primitive-gradient-coral: #ff8a65;
+}

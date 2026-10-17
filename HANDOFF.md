@@ -36,13 +36,13 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 
 ## 1. CURRENT STATE
 
-- **Phase:** Frontend Phase F2 — Console shell, routing, mocks (COMPLETED)
-- **Current Task:** Phase F2 Complete — Awaiting owner push & "continue" for Phase F3
+- **Phase:** Frontend Phase F3 — Incidents (In Progress)
+- **Current Task:** Task F3-2 — Incident detail (StateProgress, root cause, remediation, timeline)
 - **Task Status:** ready
-- **Last Commit SHA:** `e181b2b`
+- **Last Commit SHA:** `f980db7`
 - **Last Device:** `home`
-- **Last Updated:** 2026-10-17 21:00:00+05:30
-- **NEXT ACTION:** Post Phase F2 Report, intimate owner to push to GitHub, and await "continue" for Phase F3 (Incidents).
+- **Last Updated:** 2026-10-17 22:30:00+05:30
+- **NEXT ACTION:** Start Task F3-2 — Build incident detail view with StateProgress, root cause analysis card, remediation proposal options with backend verdict display, and agent audit timeline with guardrail highlight.
 
 ---
 
@@ -182,7 +182,9 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - [x] **Task F2-4 — SignalR event contract defined and mocked**
 
 ### Frontend Phase F3 — Incidents
-- [ ] **Task F3-1 — Active incident list (table + cards + SignalR mock)**  
+- [x] **Task F3-1 — Active incident list (table + cards + SignalR mock)**  
+  *Done when:* Active incident list renders desktop Table and mobile Cards, URL-driven filters (status, severity, service, search), keyboard navigation (j/k/Enter), 30s relative age timer, and realtime SignalR mock arrival with 1.2s highlight animation.  
+  *Tested on:* home (vitest 9/9 passing, full suite 121/121 passing, e2e passing, eslint zero warnings, prettier check clean, production build clean, storybook build clean)
 - [ ] **Task F3-2 — Incident detail (StateProgress, root cause, remediation, timeline)**
 
 ### Frontend Phase F4 — Agents and approvals
@@ -323,6 +325,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - **2026-10-17 17:15 [home]:** Completed Task F2-2 (Login screen + mock AuthProvider + route guard); built in-memory `AuthProvider` strictly keeping access tokens in memory and never in `localStorage` or `sessionStorage` (Brief §10 & Decision D-23) with seeded personas (SRE Lead / Admin, DevOps Operator / Operator, Audit Viewer / Viewer); built `ProtectedRoute` route guard redirecting unauthenticated visitors to `/login` with return destination preservation; built `LoginPage` with accessible form, quick-role fill buttons for testing, loading state, and error handling; wired `useAuth` into `Sidebar` user profile and sign-out button; added Storybook story `login-page.stories.tsx`; implemented 8 unit tests in `auth.test.tsx` verifying token memory invariant, localStorage non-pollution, role switching, and route protection; all 76 unit tests passing; ESLint 0 warnings/errors; Prettier check clean; Vite production build clean. Committed locally per D-26.
 - **2026-10-17 19:35 [home]:** Completed Task F2-3 (MSW handlers for all Doc 04 endpoints); created comprehensive Zod schemas and TypeScript types in `src/api/types.ts` enforcing boundary response validation; implemented typed REST client `ApiClient` in `src/api/client.ts`; created rich seed data fixtures in `src/mocks/seed-data.ts` including critical incident awaiting approval (`INC-2024-8901`), escalated incident (`INC-2024-8902`), resolved incident with guardrail violation (`INC-2024-8899`), 8 autonomous agents, production runbooks, and dashboard metrics; built MSW handlers in `src/mocks/handlers.ts` covering all Doc 04 endpoints (`GET/POST /v1/incidents`, `GET /v1/incidents/:id`, `GET /v1/incidents/:id/events`, `GET /v1/incidents/:id/remediation`, `POST /v1/approvals/:id/approve`, `POST /v1/approvals/:id/reject`, `GET /v1/agents`, `GET /v1/runbooks`, `GET /v1/dashboard/metrics`); setup MSW browser worker and node server; initialized worker conditionally in `main.tsx` (`VITE_MOCK_API`); implemented 24 unit tests in `client.test.ts`; all 100 unit tests passing; ESLint 0 warnings/errors; Prettier check clean; Storybook build clean; Vite production build clean. Committed locally per D-26.
 - **2026-10-17 21:00 [home]:** Completed Task F2-4 (SignalR event contract defined and mocked) and completed Phase F2; defined strictly-typed Zod schemas and TypeScript event mappings in `src/realtime/signalr-events.ts` matching backend `IncidentHub.cs` and `SignalRIncidentEventNotifier.cs` (`IncidentCreated`, `IncidentStatusChanged`, `AgentActionCompleted`, `ApprovalRequired`); built production `SignalRClient` wrapping `@microsoft/signalr` with automatic exponential backoff reconnection (`[0, 2000, 5000, 10000, 30000]`), typed event subscriptions, and in-memory access token factory; built `MockSignalREmitter` in-memory event bus for tests and offline development; built `RealtimeProvider`, `useRealtime` hook, and `useRealtimeSubscription` hook; connected live connection indicator in `Topbar` to `useRealtime()`; connected screen reader `#incident-live-announcer` (`aria-live="polite"`) to announce newly ingested incidents and human approval requests; added 12 unit tests in `signalr.test.tsx` (all 112 unit tests passing); full Playwright e2e test suite passing across all 8 target configurations (Chromium, Firefox, WebKit, Mobile Chrome, Mobile Safari, 768px, 1280px, 1920px viewports); ESLint 0 warnings/errors; Prettier 100% compliant; Vite production build clean; Storybook build clean; Phase F2 complete. Committed locally per D-26.
+- **2026-10-17 22:30 [home]:** Completed Task F3-1 (Active incident list with table + cards + SignalR mock); built accessible `Table` component with CVA and roving focus; built `RelativeTime` component refreshing age every 30s; integrated TanStack Query with `QueryClientProvider` in `App.tsx`; implemented `useIncidents` hook managing URL search parameters, filter synchronization (severity, status, service, text search), and realtime SignalR subscriptions (`IncidentCreated`, `IncidentStatusChanged`); built `IncidentsPage` with desktop table and mobile touch card layout, quick counters, 'Simulate Incident' dev trigger, and 1.2s highlight animation per Brief §8 (with static tint under prefers-reduced-motion); added keyboard navigation chords (`j`/`k` to select, `Enter` to open); added `incidents-page.stories.tsx` and 9 unit tests in `incidents-page.test.tsx`; all 121 unit tests passing; full Playwright e2e suite passing; ESLint 0 warnings/errors; Prettier clean; Vite production and Storybook builds clean. Committed locally per D-26.
 
 ---
 

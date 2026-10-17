@@ -150,6 +150,7 @@ export class ApiClient {
     params?: {
       status?: string[]
       severity?: string[]
+      service?: string
       limit?: number
       offset?: number
       sort_by?: string

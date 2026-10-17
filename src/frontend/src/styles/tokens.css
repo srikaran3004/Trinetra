@@ -276,3 +276,24 @@ table {
 [dir='rtl'] {
   text-align: start;
 }
+
+/* Real-time incident arrival highlight (§8: 1.2s tint; static tint under reduced motion) */
+@keyframes highlight-incident {
+  0% {
+    background-color: color-mix(in srgb, var(--color-critical) 24%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.highlight-incident {
+  animation: highlight-incident 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .highlight-incident {
+    animation: none !important;
+    background-color: color-mix(in srgb, var(--color-critical) 18%, transparent) !important;
+  }
+}

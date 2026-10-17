@@ -1,12 +1,14 @@
 import { useEffect } from 'react'
 import { RouterProvider } from 'react-router'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { useThemeStore } from './store/theme'
 import { AuthProvider } from './auth/auth-context'
 import { RealtimeProvider } from './realtime/realtime-context'
+import { queryClient } from './lib/query-client'
 import { router } from './router'
 
 /**
- * App — Root application component with AuthProvider, RealtimeProvider, RouterProvider and theme lifecycle.
+ * App — Root application component with QueryClientProvider, AuthProvider, RealtimeProvider, RouterProvider and theme lifecycle.
  */
 export default function App() {
   const { resolvedTheme, initTheme } = useThemeStore()
@@ -22,10 +24,12 @@ export default function App() {
   }, [resolvedTheme])
 
   return (
-    <AuthProvider>
-      <RealtimeProvider>
-        <RouterProvider router={router} />
-      </RealtimeProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <RealtimeProvider>
+          <RouterProvider router={router} />
+        </RealtimeProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   )
 }

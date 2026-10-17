@@ -73,6 +73,7 @@ export const handlers = [
       .get('severity')
       ?.split(',')
       .map((s) => s.trim())
+    const serviceFilter = url.searchParams.get('service')?.trim().toLowerCase()
     const limit = parseInt(url.searchParams.get('limit') || '50', 10)
     const offset = parseInt(url.searchParams.get('offset') || '0', 10)
 
@@ -94,6 +95,12 @@ export const handlers = [
 
     if (severityFilter && severityFilter.length > 0) {
       list = list.filter((inc) => severityFilter.includes(inc.severity))
+    }
+
+    if (serviceFilter && serviceFilter.length > 0 && serviceFilter !== 'all') {
+      list = list.filter((inc) =>
+        inc.affected_services.some((s) => s.toLowerCase().includes(serviceFilter)),
+      )
     }
 
     const total = list.length

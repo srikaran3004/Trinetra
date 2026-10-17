@@ -37,12 +37,12 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 ## 1. CURRENT STATE
 
 - **Phase:** Frontend Phase F1 — Design foundations (In Progress)
-- **Current Task:** Task F1-4: Overlays & Feedback components (Tooltip, Popover, Menu, Dialog, Toast, Skeleton, Spinner, InlineAlert, EmptyState, ErrorState, ProgressBar) + Stories & Tests
+- **Current Task:** Task F1-5: Contrast unit test + Storybook a11y audit + custom lint rules verification
 - **Task Status:** doing
-- **Last Commit SHA:** `82e0d39`
+- **Last Commit SHA:** `142b330`
 - **Last Device:** `home`
-- **Last Updated:** 2026-10-17 15:22:00+05:30
-- **NEXT ACTION:** Implement Overlays & Feedback components, write stories and unit tests.
+- **Last Updated:** 2026-10-17 15:43:00+05:30
+- **NEXT ACTION:** Implement contrast unit test, run Storybook a11y verification, and complete Phase F1.
 
 ---
 
@@ -172,7 +172,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - [x] **Task F1-1 — Actions components (Button, IconButton, Link, KeyboardShortcut) + Stories & Tests**  
 - [x] **Task F1-2 — Inputs components (TextField, TextArea, Select, Combobox, Checkbox, Switch, RadioGroup, SegmentedControl, DateRange) + Stories & Tests**  
 - [x] **Task F1-3 — Display components (Badge, StatusDot, Avatar, Card, Panel, MetricTile, Countdown, CodeBlock, MarkdownView) + Stories & Tests**  
-- [ ] **Task F1-4 — Overlays & Feedback components (Tooltip, Popover, Menu, Dialog, Toast, Skeleton, Spinner, InlineAlert, EmptyState, ErrorState, ProgressBar) + Stories & Tests**  
+- [x] **Task F1-4 — Overlays & Feedback components (Tooltip, Popover, Menu, Dialog, Toast, Skeleton, Spinner, InlineAlert, EmptyState, ErrorState, ProgressBar) + Stories & Tests**  
 - [ ] **Task F1-5 — Contrast unit test + Storybook a11y audit + custom lint rules verification**
 
 ### Frontend Phase F2 — Console shell, routing, mocks
@@ -317,6 +317,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - **2026-10-17 14:45 [home]:** Completed Task F1-1 (Actions components: Button, IconButton, Link, KeyboardShortcut); built React Aria Component wrappers with CVA token-based variants (primary, secondary, ghost, danger; sm, md, lg; loading spinner; Geist Mono `<kbd>`), full Storybook stories for all variants and states, and 7 unit tests in `actions.test.tsx`; verified build, format, lint (zero warnings), and vitest (15/15 passing).
 - **2026-10-17 15:10 [home]:** Completed Task F1-2 (Inputs components: TextField, TextArea, Select, Combobox, Checkbox, Switch, RadioGroup, SegmentedControl, DateRange); built React Aria Component wrappers with CVA token-based variants and strict WCAG accessibility attributes (labels, field errors, slots, focus rings, keyboard navigation), full Storybook stories for all variants and states, and 10 unit tests in `inputs.test.tsx`; verified build, format, lint (zero warnings), storybook build (clean in 23s), and vitest (25/25 passing). Committed locally per D-26 (owner pushes to GitHub).
 - **2026-10-17 15:22 [home]:** Completed Task F1-3 (Display components: Badge, StatusDot, Avatar, Card, Panel, MetricTile, Countdown, CodeBlock, MarkdownView); built semantic token-styled display primitives with explicit Target badges (§7.1/§14), 15-minute countdown timeout behavior with <=60s seconds display and minute boundary screen reader updates (§7.6), Geist Mono copyable code blocks, DOMPurify sanitized markdown view, full Storybook stories for all 9 components, and 16 unit tests in `display.test.tsx` (including markdown sanitizer XSS attack gate); verified build, format, lint (zero warnings), storybook build (clean in 25s), and vitest (41/41 passing). Committed locally per D-26.
+- **2026-10-17 15:43 [home]:** Completed Task F1-4 (Overlays & Feedback components: Tooltip, Popover, Menu, Dialog, Toast, Skeleton, Spinner, InlineAlert, EmptyState, ErrorState, ProgressBar); built accessible overlay primitives with 400ms tooltip delay (§4.2), high-risk typed confirmation dialogs requiring incident ID typing before enabling (§7.6), Sonner token-themed toast wrapper, spinner timeout safeguard path (§13), full Storybook stories for all 11 components, and 12 unit tests in `overlays-feedback.test.tsx`; verified build, format, lint (zero warnings), storybook build (clean in 31s), and vitest (53/53 passing). Committed locally per D-26.
 
 ---
 

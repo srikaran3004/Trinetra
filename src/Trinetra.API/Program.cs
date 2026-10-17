@@ -25,7 +25,9 @@ using Trinetra.Agents.Guardrails;
 using Trinetra.Agents.RemediationProposer;
 using Trinetra.Agents.AutoExecutor;
 using Trinetra.Agents.Execution;
+using Trinetra.Agents.PostMortem;
 using Trinetra.Core.Models.Execution;
+using Trinetra.Core.Models.PostMortem;
 using Trinetra.API.Hubs;
 using Trinetra.API.Services;
 using Trinetra.Core.Interfaces;
@@ -253,6 +255,25 @@ builder.Services.AddScoped<AutoExecutorAgent>(sp =>
     var auditWriter = sp.GetRequiredService<IAuditEventWriter>();
 
     return new AutoExecutorAgent(config, kernel, logger, plugin, guardrails, sandbox, store, auditWriter);
+});
+
+// 5d. Post-Mortem Generator Agent & Incident History
+builder.Services.AddScoped<IIncidentHistoryRepository, DbIncidentHistoryRepository>();
+builder.Services.AddScoped<PostMortemPlugin>();
+builder.Services.AddScoped<PostMortemAgent>(sp =>
+{
+    var aiOptions = sp.GetRequiredService<IOptions<AiSettings>>().Value;
+    var config = aiOptions.GetAgentConfig("PostMortem");
+    var factory = sp.GetRequiredService<IKernelFactory>();
+    var kernel = factory.CreateKernel(config);
+    var logger = sp.GetRequiredService<ILogger<PostMortemAgent>>();
+    var plugin = sp.GetRequiredService<PostMortemPlugin>();
+    var store = sp.GetRequiredService<IIncidentCoordinatorStore>();
+    var historyRepo = sp.GetRequiredService<IIncidentHistoryRepository>();
+    var embeddingService = sp.GetRequiredService<IEmbeddingService>();
+    var auditWriter = sp.GetRequiredService<IAuditEventWriter>();
+
+    return new PostMortemAgent(config, kernel, logger, plugin, store, historyRepo, embeddingService, auditWriter);
 });
 
 // 6. SignalR & Workflow
@@ -502,6 +523,14 @@ invoker?.RegisterAgentHandler("auto_executor", async (req, ct) =>
         : AgentExecutionResult.Failed("auto_executor", report.ErrorMessage ?? "Execution failed");
     res.OutputData = report;
     return res;
+});
+
+invoker?.RegisterAgentHandler("post_mortem_generator", async (req, ct) =>
+{
+    using var scope = app.Services.CreateScope();
+    var agent = scope.ServiceProvider.GetRequiredService<PostMortemAgent>();
+    var report = await agent.GeneratePostMortemAsync(req.IncidentId, ct);
+    return AgentExecutionResult.Succeeded("post_mortem_generator", report);
 });
 
 app.Run();

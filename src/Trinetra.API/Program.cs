@@ -21,6 +21,7 @@ using Trinetra.Agents.MetricsQuerier;
 using Trinetra.Agents.Orchestration;
 using Trinetra.Agents.RunbookRetriever;
 using Trinetra.Agents.RootCauseAnalyzer;
+using Trinetra.Agents.RemediationProposer;
 using Trinetra.API.Hubs;
 using Trinetra.API.Services;
 using Trinetra.Core.Interfaces;
@@ -210,6 +211,22 @@ builder.Services.AddScoped<RootCauseAnalyzerAgent>(sp =>
     var auditWriter = sp.GetRequiredService<IAuditEventWriter>();
 
     return new RootCauseAnalyzerAgent(config, kernel, logger, plugin, store, logsRepo, metricsRepo, auditWriter);
+});
+
+builder.Services.AddScoped<IApprovalPolicyRepository, DbApprovalPolicyRepository>();
+builder.Services.AddScoped<RemediationProposerPlugin>();
+builder.Services.AddScoped<RemediationProposerAgent>(sp =>
+{
+    var aiOptions = sp.GetRequiredService<IOptions<AiSettings>>().Value;
+    var config = aiOptions.GetAgentConfig("RemediationProposer");
+    var factory = sp.GetRequiredService<IKernelFactory>();
+    var kernel = factory.CreateKernel(config);
+    var logger = sp.GetRequiredService<ILogger<RemediationProposerAgent>>();
+    var plugin = sp.GetRequiredService<RemediationProposerPlugin>();
+    var store = sp.GetRequiredService<IIncidentCoordinatorStore>();
+    var auditWriter = sp.GetRequiredService<IAuditEventWriter>();
+
+    return new RemediationProposerAgent(config, kernel, logger, plugin, store, auditWriter);
 });
 
 // 6. SignalR
@@ -414,6 +431,19 @@ invoker?.RegisterAgentHandler("root_cause_analyzer", async (req, ct) =>
     var runbooksJson = req.Parameters.TryGetValue("runbooksJson", out var rj) ? rj?.ToString() : null;
     var report = await agent.AnalyzeRootCauseAsync(req.IncidentId, summary, logsJson, metricsJson, runbooksJson, ct);
     return AgentExecutionResult.Succeeded("root_cause_analyzer", report);
+});
+
+invoker?.RegisterAgentHandler("remediation_proposer", async (req, ct) =>
+{
+    using var scope = app.Services.CreateScope();
+    var agent = scope.ServiceProvider.GetRequiredService<RemediationProposerAgent>();
+    var rootCause = req.Parameters.TryGetValue("rootCause", out var rc) ? rc?.ToString() ?? "Incident investigation findings" : "Incident investigation findings";
+    var rootCauseCategory = req.Parameters.TryGetValue("rootCauseCategory", out var rcc) ? rcc?.ToString() : null;
+    var severity = req.Parameters.TryGetValue("severity", out var sv) ? sv?.ToString() : null;
+    var serviceName = req.Parameters.TryGetValue("serviceName", out var sn) ? sn?.ToString() : null;
+    var runbooksJson = req.Parameters.TryGetValue("runbooksJson", out var rj) ? rj?.ToString() : null;
+    var report = await agent.ProposeRemediationAsync(req.IncidentId, rootCause, rootCauseCategory, severity, serviceName, runbooksJson, ct);
+    return AgentExecutionResult.Succeeded("remediation_proposer", report);
 });
 
 app.Run();

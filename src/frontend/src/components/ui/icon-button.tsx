@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { isValidElement, type ReactNode } from 'react'
 import { Button as RACButton, type ButtonProps as RACButtonProps } from 'react-aria-components'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { Loader2 } from 'lucide-react'
@@ -48,7 +48,7 @@ export interface IconButtonProps
   extends Omit<RACButtonProps, 'children'>, VariantProps<typeof iconButtonVariants> {
   /** Mandatory accessible label for screen readers */
   'aria-label': string
-  icon: ReactNode
+  icon: ReactNode | React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>
   isLoading?: boolean
 }
 
@@ -62,6 +62,24 @@ export function IconButton({
   'aria-label': ariaLabel,
   ...props
 }: IconButtonProps) {
+  const iconSize = size === 'sm' ? 14 : size === 'lg' ? 20 : 16
+
+  const renderIcon = () => {
+    if (!icon) return null
+    if (isValidElement(icon)) {
+      return icon
+    }
+    if (typeof icon === 'function' || typeof icon === 'object') {
+      const IconComponent = icon as React.ComponentType<{
+        size?: number
+        className?: string
+        strokeWidth?: number
+      }>
+      return <IconComponent size={iconSize} strokeWidth={1.5} />
+    }
+    return icon
+  }
+
   return (
     <RACButton
       className={cn(iconButtonVariants({ variant, size, className }))}
@@ -70,14 +88,9 @@ export function IconButton({
       {...props}
     >
       {isLoading ? (
-        <Loader2
-          className="animate-spin"
-          size={size === 'sm' ? 14 : size === 'lg' ? 20 : 16}
-          strokeWidth={1.5}
-          aria-hidden="true"
-        />
+        <Loader2 className="animate-spin" size={iconSize} strokeWidth={1.5} aria-hidden="true" />
       ) : (
-        icon
+        renderIcon()
       )}
     </RACButton>
   )

@@ -3,67 +3,52 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from '../App'
 
-describe('App — F0 Scaffold', () => {
+describe('App — Console Shell and Routing (F2)', () => {
   beforeEach(() => {
-    // Ensure a clean DOM data-theme attribute before each test
+    // Clean DOM before each test
     document.documentElement.removeAttribute('data-theme')
   })
 
-  it('renders the Trinetra heading', () => {
-    render(<App />)
-    expect(screen.getByRole('heading', { level: 1, name: /trinetra/i })).toBeInTheDocument()
-  })
-
-  it('renders the skip link', () => {
+  it('renders the skip-to-content accessibility link', () => {
     render(<App />)
     const skipLink = screen.getByRole('link', { name: /skip to content/i })
     expect(skipLink).toBeInTheDocument()
     expect(skipLink).toHaveAttribute('href', '#main-content')
   })
 
-  it('renders the Trinetra SVG logo', () => {
+  it('renders the Trinetra logo and navigation landmark', () => {
     render(<App />)
     expect(screen.getByRole('img', { name: /trinetra logo/i })).toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: /console sections/i })).toBeInTheDocument()
   })
 
-  it('renders the theme toggle button', () => {
+  it('renders the main landmark', () => {
     render(<App />)
-    expect(screen.getByRole('button', { name: /toggle theme/i })).toBeInTheDocument()
+    expect(screen.getByRole('main')).toBeInTheDocument()
+  })
+
+  it('renders the active incidents section on initial load', () => {
+    render(<App />)
+    expect(screen.getByRole('heading', { level: 2, name: /active incidents/i })).toBeInTheDocument()
   })
 
   it('applies data-theme attribute to html element after init', async () => {
     render(<App />)
-    // After mounting, the theme store initializes and sets data-theme
     await new Promise((r) => setTimeout(r, 0))
     const theme = document.documentElement.getAttribute('data-theme')
     expect(['dark', 'light']).toContain(theme)
   })
 
-  it('toggles theme when the button is clicked', async () => {
+  it('toggles theme when the theme button is clicked', async () => {
     const user = userEvent.setup()
     render(<App />)
 
-    // Set a known starting state
     document.documentElement.setAttribute('data-theme', 'dark')
 
-    const button = screen.getByRole('button', { name: /toggle theme/i })
+    const button = screen.getByRole('button', { name: /switch to (light|dark) theme/i })
     await user.click(button)
 
-    // After clicking, theme should have toggled
     const theme = document.documentElement.getAttribute('data-theme')
     expect(['dark', 'light']).toContain(theme)
-  })
-
-  it('has a main landmark', () => {
-    render(<App />)
-    expect(screen.getByRole('main')).toBeInTheDocument()
-  })
-
-  it('renders all stack badges', () => {
-    render(<App />)
-    const expectedBadges = ['React 19', 'Vite', 'TypeScript strict', 'Tailwind v4', 'Motion']
-    for (const badge of expectedBadges) {
-      expect(screen.getByText(badge)).toBeInTheDocument()
-    }
   })
 })

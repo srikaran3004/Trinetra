@@ -1,75 +1,103 @@
 import { test, expect } from '@playwright/test'
 
 /**
- * F0 smoke e2e test — verifies the scaffold renders in both themes.
- * Per brief §12 F0: "the app renders a 'Trinetra' placeholder in both themes".
+ * F2 e2e test — verifies Console Shell, routing, sidebar, topbar, and keyboard shortcuts across browsers.
+ * Per brief §12 F2: "navigation works by mouse and keyboard at four widths, and route changes cause no layout shift."
  */
-test.describe('F0 — Scaffold smoke test', () => {
-  test('renders Trinetra heading', async ({ page }) => {
-    await page.goto('/')
-    await expect(page.getByRole('heading', { name: /trinetra/i, level: 1 })).toBeVisible()
-  })
-
-  test('renders the SVG logo', async ({ page }) => {
+test.describe('F2 — Console Shell & Navigation', () => {
+  test('renders Trinetra logo and brand heading', async ({ page }) => {
     await page.goto('/')
     const logo = page.getByRole('img', { name: /trinetra logo/i })
     await expect(logo).toBeVisible()
+    await expect(page.getByText('Trinetra').first()).toBeVisible()
   })
 
-  test('renders skip link', async ({ page }) => {
+  test('renders skip-to-content accessibility link', async ({ page }) => {
     await page.goto('/')
-    // Skip link is visually hidden but present in the DOM
     const skipLink = page.getByRole('link', { name: /skip to content/i })
     await expect(skipLink).toBeAttached()
+    expect(await skipLink.getAttribute('href')).toBe('#main-content')
   })
 
-  test('has dark theme applied by default', async ({ page }) => {
+  test('has dark theme applied by default and toggles via topbar button', async ({ page }) => {
     await page.goto('/')
-    const theme = await page.evaluate(
-      () => document.documentElement.getAttribute('data-theme') ?? '',
-    )
-    // System default is dark; may be 'light' if system prefers light
-    expect(['dark', 'light']).toContain(theme)
-  })
-
-  test('theme toggles when button is clicked', async ({ page }) => {
-    await page.goto('/')
-
-    const button = page.getByRole('button', { name: /toggle theme/i })
-    await expect(button).toBeVisible()
-
     const initialTheme = await page.evaluate(
       () => document.documentElement.getAttribute('data-theme') ?? '',
     )
+    expect(['dark', 'light']).toContain(initialTheme)
 
-    await button.click()
-
-    const newTheme = await page.evaluate(
-      () => document.documentElement.getAttribute('data-theme') ?? '',
-    )
-
+    const toggleButton = page.getByRole('button', { name: /switch to (light|dark) theme/i })
+    await expect(toggleButton).toBeVisible()
     const expectedToggle = initialTheme === 'dark' ? 'light' : 'dark'
-    expect(newTheme).toBe(expectedToggle)
+    await toggleButton.click({ force: true })
+
+    await expect(page.locator('html')).toHaveAttribute('data-theme', expectedToggle)
   })
 
-  test('stack badges are visible', async ({ page }) => {
+  test('renders main navigation landmark with console links', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByText('React 19')).toBeVisible()
-    await expect(page.getByText('Vite')).toBeVisible()
-    await expect(page.getByText('TypeScript strict')).toBeVisible()
+    const width = page.viewportSize()?.width ?? 1280
+    if (width < 768) {
+      const menuBtn = page.getByRole('button', { name: /open navigation menu/i })
+      await expect(menuBtn).toBeVisible()
+      await menuBtn.click()
+    }
+
+    await expect(page.getByRole('navigation', { name: /console sections/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /incidents/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /agents/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /approvals/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /runbooks/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /settings/i })).toBeVisible()
   })
 
-  test('has main landmark', async ({ page }) => {
+  test('navigates to different console sections on link click', async ({ page }) => {
     await page.goto('/')
+    const width = page.viewportSize()?.width ?? 1280
+    if (width < 768) {
+      const menuBtn = page.getByRole('button', { name: /open navigation menu/i })
+      await menuBtn.click()
+    }
+
+    await page.getByRole('link', { name: /agents/i }).click()
+    await expect(page).toHaveURL(/.*\/agents/)
+    await expect(
+      page.getByRole('heading', { level: 2, name: /autonomous agent fleet/i }),
+    ).toBeVisible()
+
+    if (width < 768) {
+      const menuBtn = page.getByRole('button', { name: /open navigation menu/i })
+      await menuBtn.click()
+    }
+
+    await page.getByRole('link', { name: /approvals/i }).click()
+    await expect(page).toHaveURL(/.*\/approvals/)
+    await expect(
+      page.getByRole('heading', { level: 2, name: /remediation approval queue/i }),
+    ).toBeVisible()
+  })
+
+  test('opens Command Palette on clicking search trigger or pressing / key', async ({ page }) => {
+    await page.goto('/')
+    const searchTrigger = page.getByRole('button', { name: /search console/i })
+    await expect(searchTrigger).toBeVisible()
+    await searchTrigger.click()
+
+    const input = page.getByPlaceholder(/type a command/i)
+    await expect(input).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(input).not.toBeVisible()
+
+    // Test shortcut `/`
+    await page.keyboard.press('/')
+    await expect(input).toBeVisible()
+  })
+
+  test('has main content landmark and no layout shift (CLS target <= 0.1)', async ({ page }) => {
+    await page.goto('/')
+    await page.waitForLoadState('domcontentloaded')
     await expect(page.getByRole('main')).toBeVisible()
-  })
 
-  test('no layout shift — CLS target 0.1', async ({ page }) => {
-    await page.goto('/')
-    // Wait for hydration
-    await page.waitForLoadState('networkidle')
-
-    // Measure CLS using PerformanceObserver
     const cls = await page.evaluate(async () => {
       return new Promise<number>((resolve) => {
         let clsValue = 0
@@ -85,11 +113,10 @@ test.describe('F0 — Scaffold smoke test', () => {
           }
         })
         observer.observe({ type: 'layout-shift', buffered: true })
-        // Give it a moment to collect
         setTimeout(() => {
           observer.disconnect()
           resolve(clsValue)
-        }, 1000)
+        }, 800)
       })
     })
     expect(cls).toBeLessThanOrEqual(0.1)

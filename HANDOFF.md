@@ -36,13 +36,13 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 
 ## 1. CURRENT STATE
 
-- **Phase:** Frontend Phase F3 — Incidents (Completed)
-- **Current Task:** Phase F3 Complete — Task F3-2 done
-- **Task Status:** done
-- **Last Commit SHA:** `325139c`
+- **Phase:** Frontend Phase F4 — Agents and approvals
+- **Current Task:** Task F4-2 — Approval queue (Countdown, typed confirm, deny with reason, optimistic)
+- **Task Status:** doing
+- **Last Commit SHA:** `797cb1d`
 - **Last Device:** `home`
-- **Last Updated:** 2026-10-17 23:15:00+05:30
-- **NEXT ACTION:** Phase F3 complete. Intimate owner for push to GitHub, then proceed to Phase F4 (Agents and Approvals) upon "continue".
+- **Last Updated:** 2026-10-18 11:45:00+05:30
+- **NEXT ACTION:** Implement Task F4-2 (Approval queue per Brief §7.6), verify all quality gates, and complete Phase F4.
 
 ---
 
@@ -190,7 +190,9 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
   *Tested on:* home (5 unit tests in `incident-detail-page.test.tsx`, all 126 unit tests passing, full 85 E2E tests passing, ESLint 0 warnings/errors, Prettier check clean, Vite production build clean, Storybook build clean)
 
 ### Frontend Phase F4 — Agents and approvals
-- [ ] **Task F4-1 — Agent activity monitor**  
+- [x] **Task F4-1 — Agent activity monitor**  
+  *Done when:* Agent activity monitor (`/agents`) renders live fleet state (all 8 agents), default filter to in-progress (§7.5), elapsed active durations, Geist Mono tool calls, distinct warning styling on guardrail violations > 0 (§7.5 & §10), active incident cross-links, and realtime updates via `AgentActionCompleted` SignalR event.  
+  *Tested on:* home (6 unit tests in `agents-page.test.tsx`, all 132 unit tests passing, ESLint 0 warnings/0 errors, Prettier 100% compliant, Vite production build clean, Storybook build clean)
 - [ ] **Task F4-2 — Approval queue (Countdown, typed confirm, deny with reason, optimistic)**
 
 ### Frontend Phase F5 — History, runbooks, settings
@@ -329,6 +331,7 @@ CHECKPOINT (after every task, and immediately on "pause", "stop", "end", or "lea
 - **2026-10-17 21:00 [home]:** Completed Task F2-4 (SignalR event contract defined and mocked) and completed Phase F2; defined strictly-typed Zod schemas and TypeScript event mappings in `src/realtime/signalr-events.ts` matching backend `IncidentHub.cs` and `SignalRIncidentEventNotifier.cs` (`IncidentCreated`, `IncidentStatusChanged`, `AgentActionCompleted`, `ApprovalRequired`); built production `SignalRClient` wrapping `@microsoft/signalr` with automatic exponential backoff reconnection (`[0, 2000, 5000, 10000, 30000]`), typed event subscriptions, and in-memory access token factory; built `MockSignalREmitter` in-memory event bus for tests and offline development; built `RealtimeProvider`, `useRealtime` hook, and `useRealtimeSubscription` hook; connected live connection indicator in `Topbar` to `useRealtime()`; connected screen reader `#incident-live-announcer` (`aria-live="polite"`) to announce newly ingested incidents and human approval requests; added 12 unit tests in `signalr.test.tsx` (all 112 unit tests passing); full Playwright e2e test suite passing across all 8 target configurations (Chromium, Firefox, WebKit, Mobile Chrome, Mobile Safari, 768px, 1280px, 1920px viewports); ESLint 0 warnings/errors; Prettier 100% compliant; Vite production build clean; Storybook build clean; Phase F2 complete. Committed locally per D-26.
 - **2026-10-17 22:30 [home]:** Completed Task F3-1 (Active incident list with table + cards + SignalR mock); built accessible `Table` component with CVA and roving focus; built `RelativeTime` component refreshing age every 30s; integrated TanStack Query with `QueryClientProvider` in `App.tsx`; implemented `useIncidents` hook managing URL search parameters, filter synchronization (severity, status, service, text search), and realtime SignalR subscriptions (`IncidentCreated`, `IncidentStatusChanged`); built `IncidentsPage` with desktop table and mobile touch card layout, quick counters, 'Simulate Incident' dev trigger, and 1.2s highlight animation per Brief §8 (with static tint under prefers-reduced-motion); added keyboard navigation chords (`j`/`k` to select, `Enter` to open); added `incidents-page.stories.tsx` and 9 unit tests in `incidents-page.test.tsx`; all 121 unit tests passing; full Playwright e2e suite passing; ESLint 0 warnings/errors; Prettier clean; Vite production and Storybook builds clean. Committed locally per D-26.
 - **2026-10-17 23:15 [home]:** Completed Task F3-2 (Incident detail: StateProgress, root cause, remediation, timeline) and completed Phase F3; built `StateProgress` with 7 linear steps and dedicated `ESCALATED BRANCH` alert banner; built `ConfidenceBar` with 0.80 auto-resolution threshold marker and eligibility badge; built `RootCauseCard` with evidence chain; built `RemediationCard` showing backend verdicts verbatim (`requires_approval`, `blocked_by_guardrail`) without client-side override, pre/post flight checks, command `CodeBlock`, and rollback plan; built `AgentTimeline` with distinct red-bordered, tinted background and explicit `GUARDRAIL TRIGGERED` text label per Brief §7.4 and §10; built `DiagnosticSnapshots` with telemetry snapshot, Geist Mono log excerpt, and linked runbooks; created `IncidentDetailPage` with full layout and breadcrumb navigation; added `useIncidentDetail` hook with SignalR incident group join/leave; created Storybook stories for `StateProgress`, `ConfidenceBar`, and `IncidentDetailPage`; added 5 unit tests in `incident-detail-page.test.tsx` (all 126 unit tests passing); added E2E tests in `e2e/incidents.spec.ts` covering seeded incidents list, navigation to detail, guardrail-triggered timeline inspection, and escalated branch; full Playwright E2E suite passing across all 8 configurations (85 passed); ESLint 0 warnings/0 errors; Prettier 100% compliant; Vite production bundle clean (11.6s); Storybook production build clean (24.5s); Phase F3 complete. Committed locally per D-26.
+- **2026-10-18 11:45 [home]:** Completed Task F4-1 (Agent activity monitor); built `useAgents` hook with URL state sync, default in-progress filter (§7.5), and SignalR `AgentActionCompleted` live subscriber; built `AgentCard` component with role-specific icons, status dot/badge, Geist Mono tool call snippet, elapsed duration timer, distinct guardrail violation count styling with `ShieldAlert` when > 0, and active incident navigation link; built `AgentsPage` with fleet status metric counters, SignalR live pulse, search and status filters, dev test triggers, and responsive grid layout; added Storybook stories for `AgentCard` and `AgentsPage`; added 6 unit tests in `agents-page.test.tsx` (all 132 unit tests passing); ESLint 0 warnings/0 errors; Prettier 100% compliant; Vite production and Storybook builds clean. Committed locally per D-26.
 
 ---
 

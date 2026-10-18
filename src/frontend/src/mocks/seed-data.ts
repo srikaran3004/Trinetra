@@ -324,6 +324,35 @@ export const SEED_REMEDIATION_8901: RemediationOption[] = [
 
 export const SEED_APPROVALS: ApprovalRequest[] = [
   {
+    id: 'appr-8904',
+    incident_id: 'INC-2024-8904',
+    action: 'Drain and isolate compromised border gateway router',
+    command: 'edge-router-cli --action drain --target bgp-gw-02 --grace-period 30s',
+    risk_level: 'high',
+    approval_level: 'admin',
+    timeout_at: new Date(Date.now() + 50 * 1000).toISOString(), // 50 seconds remaining (< 60s countdown)
+    created_at: new Date(Date.now() - 14 * 60 * 1000).toISOString(),
+    status: 'pending',
+    notes:
+      'Edge anomaly detected. Automated failover timeout in under 1 minute. Admin confirmation mandatory.',
+    rollback_description: 'edge-router-cli --action undrain --target bgp-gw-02',
+    verdict: 'requires_approval',
+  },
+  {
+    id: 'appr-8903',
+    incident_id: 'INC-2024-8903',
+    action: 'Restart redis-cart cache cluster pods to evict corrupted serialization keys',
+    command: 'kubectl rollout restart deployment/redis-cart -n cart-prod',
+    risk_level: 'medium',
+    approval_level: 'operator',
+    timeout_at: new Date(Date.now() + 8 * 60 * 1000).toISOString(), // 8 minutes remaining
+    created_at: new Date(Date.now() - 7 * 60 * 1000).toISOString(),
+    status: 'pending',
+    notes: 'Cache key deserialization exceptions in cart-service. Operator or Lead may approve.',
+    rollback_description: 'kubectl rollout undo deployment/redis-cart -n cart-prod',
+    verdict: 'requires_approval',
+  },
+  {
     id: 'appr-8901',
     incident_id: 'INC-2024-8901',
     action: 'Terminate idle connections and increase connection pool',
@@ -335,6 +364,23 @@ export const SEED_APPROVALS: ApprovalRequest[] = [
     created_at: '2026-10-17T16:32:30Z',
     status: 'pending',
     notes: 'Connection pool saturation causing 18% auth errors. Requires SRE Lead confirmation.',
+    rollback_description:
+      'Revert MaxPoolSize back to 100; reload auth-api configuration with default connection settings.',
+    verdict: 'requires_approval',
+  },
+  {
+    id: 'appr-8905',
+    incident_id: 'INC-2024-8901',
+    action: 'Force delete all pods in namespace auth (BLOCKED BY GUARDRAIL)',
+    command: 'kubectl delete pods --all -n auth --force --grace-period=0',
+    risk_level: 'high',
+    approval_level: 'admin',
+    timeout_at: new Date(Date.now() + 14 * 60 * 1000).toISOString(),
+    created_at: new Date().toISOString(),
+    status: 'pending',
+    notes: 'Intercepted destructive pattern: mass pod termination violates Guardrail Policy RG-01.',
+    rollback_description: 'Cannot rollback service outage caused by simultaneous pod termination',
+    verdict: 'blocked_by_guardrail',
   },
   {
     id: 'appr-8902',
@@ -347,6 +393,8 @@ export const SEED_APPROVALS: ApprovalRequest[] = [
     created_at: '2026-10-17T15:10:00Z',
     status: 'denied',
     notes: 'Denied by SRE Lead: Too risky during peak flash sale hours without prior smoke test.',
+    rollback_description: 'Re-enable primary payment gateway route in Envoy service mesh.',
+    verdict: 'requires_approval',
   },
 ]
 

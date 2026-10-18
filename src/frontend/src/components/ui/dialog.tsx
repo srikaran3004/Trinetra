@@ -23,6 +23,7 @@ export interface DialogProps extends RACModalOverlayProps {
   cancelLabel?: string
   confirmVariant?: 'primary' | 'danger'
   confirmPhrase?: string // For high-risk actions per §7.6
+  isConfirmDisabled?: boolean
   onConfirm?: () => void
   onCancel?: () => void
   className?: string
@@ -39,6 +40,7 @@ export function Dialog({
   cancelLabel = 'Cancel',
   confirmVariant = 'primary',
   confirmPhrase,
+  isConfirmDisabled,
   onConfirm,
   onCancel,
   className,
@@ -46,7 +48,12 @@ export function Dialog({
 }: DialogProps) {
   const [typedPhrase, setTypedPhrase] = useState('')
 
-  const isConfirmDisabled = confirmPhrase ? typedPhrase.trim() !== confirmPhrase.trim() : false
+  const isButtonDisabled =
+    isConfirmDisabled !== undefined
+      ? isConfirmDisabled
+      : confirmPhrase
+        ? typedPhrase.trim() !== confirmPhrase.trim()
+        : false
 
   const renderDialogContent = (close: () => void) => (
     <>
@@ -123,7 +130,7 @@ export function Dialog({
         <Button
           variant={confirmVariant}
           size="sm"
-          isDisabled={isConfirmDisabled}
+          isDisabled={isButtonDisabled}
           onPress={() => {
             onConfirm?.()
             close()

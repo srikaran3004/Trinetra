@@ -119,7 +119,12 @@ export function AgentsPage() {
 
         {/* Fleet Metrics & Simulation CTAs */}
         <div className="flex items-center flex-wrap gap-2">
-          <Badge variant="success" size="sm" className="gap-1 font-medium">
+          <Badge
+            variant="success"
+            size="sm"
+            className="gap-1 font-medium"
+            data-testid="working-agents-badge"
+          >
             <Activity size={12} />
             <span>{metrics.working} Working</span>
           </Badge>

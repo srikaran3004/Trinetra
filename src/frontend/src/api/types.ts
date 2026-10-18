@@ -173,6 +173,8 @@ export const ApprovalRequestSchema = z.object({
   created_at: z.string(),
   status: ApprovalStatusSchema,
   notes: z.string().optional(),
+  rollback_description: z.string().optional(),
+  verdict: RemediationVerdictSchema.optional(),
 })
 export type ApprovalRequest = z.infer<typeof ApprovalRequestSchema>
 

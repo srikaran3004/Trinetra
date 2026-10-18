@@ -176,6 +176,7 @@ export function AgentCard({ agent, className }: AgentCardProps) {
                 size="sm"
                 className="gap-1 font-semibold"
                 aria-label={`${agent.guardrail_violations_count} guardrail violation intercepted`}
+                data-testid="guardrail-violation-alert"
               >
                 <ShieldAlert size={12} />
                 <span>{agent.guardrail_violations_count} Guardrail Intercepted</span>
